@@ -22,8 +22,7 @@ export async function login(_prevState: AuthState, formData: FormData): Promise<
     if (error.code === "invalid_credentials") {
       return { error: "E-mail ou senha inválidos." };
     }
-    // diagnóstico temporário: mostra o erro real em vez de mascarar tudo como "senha inválida"
-    return { error: `Erro ao entrar [${error.code ?? error.name ?? "desconhecido"}]: ${error.message}` };
+    return { error: "Não foi possível entrar agora. Tente novamente em instantes." };
   }
 
   redirect("/");
