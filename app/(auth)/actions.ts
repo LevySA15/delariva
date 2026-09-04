@@ -19,7 +19,11 @@ export async function login(_prevState: AuthState, formData: FormData): Promise<
         error: "Confirme seu e-mail antes de entrar — veja o link que enviamos para sua caixa de entrada (e a pasta de spam).",
       };
     }
-    return { error: "E-mail ou senha inválidos." };
+    if (error.code === "invalid_credentials") {
+      return { error: "E-mail ou senha inválidos." };
+    }
+    // diagnóstico temporário: mostra o erro real em vez de mascarar tudo como "senha inválida"
+    return { error: `Erro ao entrar [${error.code ?? error.name ?? "desconhecido"}]: ${error.message}` };
   }
 
   redirect("/");
