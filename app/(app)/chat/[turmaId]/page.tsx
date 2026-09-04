@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getTurma, getProfessoresDaTurma, getAlunosDaTurma } from "@/lib/queries/turmas";
 import { getMensagensTurma } from "@/lib/queries/chat";
 import { ChatRoom } from "@/components/chat-room";
+import { PageHeader } from "@/components/ui/page-header";
 
 export default async function ChatTurmaPage({
   params,
@@ -29,7 +30,7 @@ export default async function ChatTurmaPage({
 
   return (
     <div>
-      <h1 className="mb-4 text-2xl font-bold text-neutral-900">{turma.nome}</h1>
+      <PageHeader title={turma.nome} />
       <ChatRoom
         turmaId={turmaId}
         currentUserId={profile.id}

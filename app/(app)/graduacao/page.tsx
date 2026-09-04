@@ -1,9 +1,13 @@
 import { redirect } from "next/navigation";
-import Link from "next/link";
+import { Award } from "lucide-react";
 import { requireProfile } from "@/lib/supabase/current-user";
 import { createClient } from "@/lib/supabase/server";
 import { getDependentes } from "@/lib/queries/dashboard";
 import { listAlunosDoProfessor, listTodosAlunos } from "@/lib/queries/graduacao";
+import { PageHeader } from "@/components/ui/page-header";
+import { CardLink } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { FaixaBadge } from "@/components/ui/faixa-badge";
 
 export default async function GraduacaoIndexPage() {
   const profile = await requireProfile();
@@ -30,22 +34,18 @@ export default async function GraduacaoIndexPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-bold text-neutral-900">Graduação</h1>
+      <PageHeader title="Graduação" />
       {alunos.length === 0 ? (
-        <p className="text-sm text-neutral-500">Nenhum aluno encontrado.</p>
+        <EmptyState icon={Award} message="Nenhum aluno encontrado." />
       ) : (
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
           {alunos.map((a) => (
-            <Link
-              key={a.id}
-              href={`/graduacao/${a.id}`}
-              className="rounded-xl border border-neutral-200 bg-white p-4 shadow-sm transition hover:border-red-300"
-            >
-              <p className="font-medium text-neutral-900">{a.full_name}</p>
-              <p className="mt-1 text-sm text-neutral-500">
-                {a.faixa ? `${a.faixa.faixa} · grau ${a.faixa.grau}` : "sem graduação"}
-              </p>
-            </Link>
+            <CardLink key={a.id} href={`/graduacao/${a.id}`} className="p-4">
+              <p className="font-semibold text-ink-950">{a.full_name}</p>
+              <div className="mt-2">
+                {a.faixa ? <FaixaBadge faixa={a.faixa.faixa} grau={a.faixa.grau} /> : <span className="text-sm text-ink-900/40">sem graduação</span>}
+              </div>
+            </CardLink>
           ))}
         </div>
       )}

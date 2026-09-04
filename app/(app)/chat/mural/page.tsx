@@ -1,6 +1,10 @@
+import { Megaphone } from "lucide-react";
 import { requireProfile } from "@/lib/supabase/current-user";
 import { createClient } from "@/lib/supabase/server";
 import { listMural } from "@/lib/queries/chat";
+import { PageHeader } from "@/components/ui/page-header";
+import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { MuralForm } from "./mural-form";
 
 export default async function MuralPage() {
@@ -11,25 +15,24 @@ export default async function MuralPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-neutral-900">Mural de avisos</h1>
+      <PageHeader title="Mural de avisos" />
 
       {podePublicar && <MuralForm />}
 
       {avisos.length === 0 ? (
-        <p className="text-sm text-neutral-500">Nenhum aviso publicado ainda.</p>
+        <EmptyState icon={Megaphone} message="Nenhum aviso publicado ainda." />
       ) : (
-        <ul className="space-y-3">
+        <div className="space-y-3">
           {avisos.map((aviso) => (
-            <li key={aviso.id} className="rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
-              <p className="font-medium text-neutral-900">{aviso.titulo}</p>
-              <p className="mt-1 text-sm text-neutral-600">{aviso.mensagem}</p>
-              <p className="mt-2 text-xs text-neutral-400">
-                {aviso.autor?.full_name ?? "Academia"} ·{" "}
-                {new Date(aviso.created_at).toLocaleDateString("pt-BR")}
+            <Card key={aviso.id} className="p-4">
+              <p className="font-semibold text-ink-950">{aviso.titulo}</p>
+              <p className="mt-1 text-sm text-ink-900/60">{aviso.mensagem}</p>
+              <p className="mt-2 text-xs text-ink-900/40">
+                {aviso.autor?.full_name ?? "Academia"} · {new Date(aviso.created_at).toLocaleDateString("pt-BR")}
               </p>
-            </li>
+            </Card>
           ))}
-        </ul>
+        </div>
       )}
     </div>
   );

@@ -2,6 +2,8 @@
 
 import { useActionState } from "react";
 import { vincularResponsavel, type FormState } from "../actions";
+import { Field, inputClass } from "@/components/ui/field";
+import { Button } from "@/components/ui/button";
 
 const initialState: FormState = { error: null };
 
@@ -15,12 +17,12 @@ export function VinculoForm({
   const [state, formAction, pending] = useActionState(vincularResponsavel, initialState);
 
   return (
-    <form action={formAction} className="flex max-w-xl flex-wrap items-end gap-3 rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
-      <div className="space-y-1">
-        <label htmlFor="responsavel_id" className="text-xs text-neutral-600">
-          Responsável
-        </label>
-        <select id="responsavel_id" name="responsavel_id" required className="rounded-md border border-neutral-300 px-2 py-1.5 text-sm">
+    <form
+      action={formAction}
+      className="flex max-w-xl flex-wrap items-end gap-3 rounded-lg border border-ink-900/10 bg-white p-4 shadow-sm"
+    >
+      <Field label="Responsável" htmlFor="responsavel_id">
+        <select id="responsavel_id" name="responsavel_id" required className={inputClass}>
           <option value="">Selecione...</option>
           {responsaveis.map((r) => (
             <option key={r.id} value={r.id}>
@@ -28,13 +30,10 @@ export function VinculoForm({
             </option>
           ))}
         </select>
-      </div>
+      </Field>
 
-      <div className="space-y-1">
-        <label htmlFor="aluno_id" className="text-xs text-neutral-600">
-          Aluno menor
-        </label>
-        <select id="aluno_id" name="aluno_id" required className="rounded-md border border-neutral-300 px-2 py-1.5 text-sm">
+      <Field label="Aluno menor" htmlFor="aluno_id">
+        <select id="aluno_id" name="aluno_id" required className={inputClass}>
           <option value="">Selecione...</option>
           {alunosMenores.map((a) => (
             <option key={a.id} value={a.id}>
@@ -42,17 +41,13 @@ export function VinculoForm({
             </option>
           ))}
         </select>
-      </div>
+      </Field>
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="rounded-md bg-red-700 px-3 py-1.5 text-sm text-white hover:bg-red-600 disabled:opacity-60"
-      >
+      <Button type="submit" size="sm" disabled={pending}>
         {pending ? "Salvando..." : "Vincular"}
-      </button>
+      </Button>
 
-      {state.error && <p className="w-full text-sm text-red-600">{state.error}</p>}
+      {state.error && <p className="w-full text-sm text-brand-700">{state.error}</p>}
     </form>
   );
 }

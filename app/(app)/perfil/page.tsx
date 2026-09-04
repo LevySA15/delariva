@@ -2,6 +2,8 @@ import { requireProfile } from "@/lib/supabase/current-user";
 import { createClient } from "@/lib/supabase/server";
 import { ROLE_LABELS } from "@/lib/domain";
 import { getFaixaAtual } from "@/lib/queries/dashboard";
+import { PageHeader } from "@/components/ui/page-header";
+import { Card } from "@/components/ui/card";
 import { PerfilForm } from "./perfil-form";
 
 export default async function PerfilPage({
@@ -19,7 +21,7 @@ export default async function PerfilPage({
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-bold text-neutral-900">Meu perfil</h1>
+      <PageHeader title="Meu perfil" />
       <PerfilForm
         fullName={profile.full_name}
         phone={profile.phone}
@@ -36,15 +38,15 @@ async function DependentePerfil({ alunoId }: { alunoId: string }) {
   const { data: aluno } = await supabase.from("profiles").select("*").eq("id", alunoId).single();
 
   if (!aluno) {
-    return <p className="text-neutral-500">Aluno não encontrado ou sem vínculo com você.</p>;
+    return <p className="text-ink-900/50">Aluno não encontrado ou sem vínculo com você.</p>;
   }
 
   const faixa = await getFaixaAtual(supabase, alunoId);
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-bold text-neutral-900">{aluno.full_name}</h1>
-      <div className="max-w-md space-y-3 rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+      <PageHeader title={aluno.full_name} />
+      <Card className="max-w-md space-y-3 p-6">
         <Info label="Perfil" value={ROLE_LABELS[aluno.role]} />
         <Info
           label="Data de nascimento"
@@ -56,7 +58,7 @@ async function DependentePerfil({ alunoId }: { alunoId: string }) {
         />
         <Info label="Telefone" value={aluno.phone ?? "—"} />
         <Info label="Faixa atual" value={faixa ? `${faixa.faixa} · grau ${faixa.grau}` : "—"} />
-      </div>
+      </Card>
     </div>
   );
 }
@@ -64,8 +66,8 @@ async function DependentePerfil({ alunoId }: { alunoId: string }) {
 function Info({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-sm text-neutral-500">{label}</p>
-      <p className="font-medium text-neutral-900">{value}</p>
+      <p className="text-xs font-semibold uppercase tracking-wide text-ink-900/40">{label}</p>
+      <p className="font-medium text-ink-950">{value}</p>
     </div>
   );
 }

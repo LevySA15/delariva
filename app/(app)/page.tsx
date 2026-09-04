@@ -1,8 +1,12 @@
-import Link from "next/link";
+import { Megaphone, Users, GraduationCap, Swords, Wallet } from "lucide-react";
 import { requireProfile } from "@/lib/supabase/current-user";
 import { createClient } from "@/lib/supabase/server";
 import { ROLE_LABELS, STATUS_MENSALIDADE_LABELS } from "@/lib/domain";
 import { StatCard } from "@/components/stat-card";
+import { Card, CardLink } from "@/components/ui/card";
+import { PageHeader } from "@/components/ui/page-header";
+import { EmptyState } from "@/components/ui/empty-state";
+import { FaixaBadge } from "@/components/ui/faixa-badge";
 import {
   getAlunoStats,
   getDependentes,
@@ -19,12 +23,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold text-neutral-900">
-          Olá, {profile.full_name.split(" ")[0]}
-        </h1>
-        <p className="mt-1 text-neutral-500">Perfil: {ROLE_LABELS[profile.role]}</p>
-      </div>
+      <PageHeader title={`Olá, ${profile.full_name.split(" ")[0]}`} subtitle={ROLE_LABELS[profile.role]} />
 
       {profile.role === "dono" && <DonoStats />}
       {profile.role === "professor" && <ProfessorStats professorId={profile.id} />}
@@ -34,18 +33,21 @@ export default async function DashboardPage() {
       {profile.role === "responsavel" && <ResponsavelStats responsavelId={profile.id} />}
 
       <div>
-        <h2 className="mb-3 text-lg font-semibold text-neutral-900">Mural de avisos</h2>
+        <h2 className="mb-3 flex items-center gap-2 font-display text-sm font-semibold uppercase tracking-wide text-ink-900/60">
+          <Megaphone className="h-4 w-4 text-brand-600" />
+          Mural de avisos
+        </h2>
         {mural.length === 0 ? (
-          <p className="text-sm text-neutral-500">Nenhum aviso publicado ainda.</p>
+          <EmptyState icon={Megaphone} message="Nenhum aviso publicado ainda." />
         ) : (
-          <ul className="space-y-3">
+          <div className="space-y-3">
             {mural.map((aviso) => (
-              <li key={aviso.id} className="rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
-                <p className="font-medium text-neutral-900">{aviso.titulo}</p>
-                <p className="mt-1 text-sm text-neutral-600">{aviso.mensagem}</p>
-              </li>
+              <Card key={aviso.id} className="p-4">
+                <p className="font-semibold text-ink-950">{aviso.titulo}</p>
+                <p className="mt-1 text-sm text-ink-900/60">{aviso.mensagem}</p>
+              </Card>
             ))}
-          </ul>
+          </div>
         )}
       </div>
     </div>
@@ -58,14 +60,10 @@ async function DonoStats() {
 
   return (
     <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-      <StatCard label="Alunos" value={stats.alunos} />
-      <StatCard label="Professores" value={stats.professores} />
-      <StatCard label="Turmas ativas" value={stats.turmasAtivas} />
-      <StatCard
-        label="Mensalidades pendentes"
-        value={stats.mensalidadesPendentes}
-        hint="mês atual"
-      />
+      <StatCard label="Alunos" value={stats.alunos} icon={Users} />
+      <StatCard label="Professores" value={stats.professores} icon={GraduationCap} />
+      <StatCard label="Turmas ativas" value={stats.turmasAtivas} icon={Swords} />
+      <StatCard label="Mensalidades pendentes" value={stats.mensalidadesPendentes} hint="mês atual" icon={Wallet} />
     </div>
   );
 }
@@ -76,8 +74,8 @@ async function ProfessorStats({ professorId }: { professorId: string }) {
 
   return (
     <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-      <StatCard label="Minhas turmas" value={stats.minhasTurmas} />
-      <StatCard label="Meus alunos" value={stats.meusAlunos} />
+      <StatCard label="Minhas turmas" value={stats.minhasTurmas} icon={Swords} />
+      <StatCard label="Meus alunos" value={stats.meusAlunos} icon={Users} />
     </div>
   );
 }
@@ -89,15 +87,17 @@ async function AlunoStats({ alunoId, isAluno }: { alunoId: string; isAluno: bool
 
   return (
     <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-      <StatCard label="Minhas turmas" value={stats.minhasTurmas} />
+      <StatCard label="Minhas turmas" value={stats.minhasTurmas} icon={Swords} />
       <StatCard
         label="Faixa atual"
         value={stats.faixa ? `${stats.faixa.faixa} · grau ${stats.faixa.grau}` : "—"}
+        icon={GraduationCap}
       />
       {isAluno && (
         <StatCard
           label="Mensalidade do mês"
           value={mensalidade ? STATUS_MENSALIDADE_LABELS[mensalidade.status] : "—"}
+          icon={Wallet}
         />
       )}
     </div>
@@ -110,27 +110,26 @@ async function ResponsavelStats({ responsavelId }: { responsavelId: string }) {
 
   if (dependentes.length === 0) {
     return (
-      <p className="text-sm text-neutral-500">
-        Nenhum aluno vinculado a você ainda. Fale com a academia para associar seus dependentes.
-      </p>
+      <EmptyState
+        icon={Users}
+        message="Nenhum aluno vinculado a você ainda. Fale com a academia para associar seus dependentes."
+      />
     );
   }
 
   return (
     <div>
-      <h2 className="mb-3 text-lg font-semibold text-neutral-900">Seus dependentes</h2>
+      <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wide text-ink-900/60">
+        Seus dependentes
+      </h2>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {dependentes.map((dep) => (
-          <Link
-            key={dep.id}
-            href={`/perfil?aluno=${dep.id}`}
-            className="rounded-xl border border-neutral-200 bg-white p-4 shadow-sm transition hover:border-red-300"
-          >
-            <p className="font-medium text-neutral-900">{dep.full_name}</p>
-            <p className="mt-1 text-sm text-neutral-500">
-              Faixa: {dep.faixa ? `${dep.faixa.faixa} · grau ${dep.faixa.grau}` : "—"}
-            </p>
-          </Link>
+          <CardLink key={dep.id} href={`/perfil?aluno=${dep.id}`} className="p-4">
+            <p className="font-semibold text-ink-950">{dep.full_name}</p>
+            <div className="mt-2">
+              {dep.faixa ? <FaixaBadge faixa={dep.faixa.faixa} grau={dep.faixa.grau} /> : <span className="text-sm text-ink-900/40">Sem graduação</span>}
+            </div>
+          </CardLink>
         ))}
       </div>
     </div>

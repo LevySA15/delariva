@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Menu, X } from "lucide-react";
 import { Sidebar } from "./sidebar";
 import type { UserRole } from "@/lib/domain";
 
@@ -16,7 +17,7 @@ export function AppShell({
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-neutral-100">
+    <div className="flex h-screen overflow-hidden bg-surface">
       {/* sidebar desktop */}
       <div className="hidden md:block">
         <Sidebar role={role} fullName={fullName} />
@@ -25,29 +26,36 @@ export function AppShell({
       {/* sidebar mobile (drawer) */}
       {mobileOpen && (
         <div className="fixed inset-0 z-40 md:hidden">
-          <div
-            className="absolute inset-0 bg-black/50"
-            onClick={() => setMobileOpen(false)}
-          />
+          <div className="absolute inset-0 bg-black/60" onClick={() => setMobileOpen(false)} />
           <div className="relative z-50 h-full">
             <Sidebar role={role} fullName={fullName} />
+            <button
+              aria-label="Fechar menu"
+              onClick={() => setMobileOpen(false)}
+              className="absolute right-3 top-5 text-white/60 hover:text-white"
+            >
+              <X className="h-5 w-5" />
+            </button>
           </div>
         </div>
       )}
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex items-center gap-3 border-b border-neutral-200 bg-white px-4 py-3 md:hidden">
+        <header className="flex items-center gap-3 border-b border-ink-900/10 bg-ink-950 px-4 py-3 md:hidden">
           <button
             aria-label="Abrir menu"
             onClick={() => setMobileOpen(true)}
-            className="rounded-md border border-neutral-300 px-3 py-1.5 text-sm"
+            className="rounded-md border border-white/15 p-1.5 text-white"
           >
-            Menu
+            <Menu className="h-5 w-5" />
           </button>
-          <span className="font-semibold text-neutral-900">DELARIVA</span>
+          <span className="h-2 w-5 rounded-sm bg-brand-600" aria-hidden />
+          <span className="font-display font-semibold uppercase tracking-wider text-white">DELARIVA</span>
         </header>
 
-        <main className="flex-1 overflow-y-auto p-4 md:p-8">{children}</main>
+        <main className="flex-1 overflow-y-auto p-4 md:p-8">
+          <div className="mx-auto max-w-6xl">{children}</div>
+        </main>
       </div>
     </div>
   );

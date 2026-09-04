@@ -1,10 +1,15 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
+import Link from "next/link";
+import { Wallet } from "lucide-react";
 import { requireProfile } from "@/lib/supabase/current-user";
 import { createClient } from "@/lib/supabase/server";
 import { listMensalidadesDoMes } from "@/lib/queries/financeiro";
 import { getDependentes } from "@/lib/queries/dashboard";
-import { STATUS_MENSALIDADE_LABELS } from "@/lib/domain";
+import { PageHeader } from "@/components/ui/page-header";
+import { CardLink, Card } from "@/components/ui/card";
+import { LinkButton } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
+import { StatusMensalidadeBadge } from "@/components/ui/status-badge";
 
 export default async function FinanceiroPage() {
   const profile = await requireProfile();
@@ -26,16 +31,12 @@ export default async function FinanceiroPage() {
     }
     return (
       <div>
-        <h1 className="mb-6 text-2xl font-bold text-neutral-900">Financeiro</h1>
+        <PageHeader title="Financeiro" />
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           {dependentes.map((d) => (
-            <Link
-              key={d.id}
-              href={`/financeiro/${d.id}`}
-              className="rounded-xl border border-neutral-200 bg-white p-4 shadow-sm transition hover:border-red-300"
-            >
+            <CardLink key={d.id} href={`/financeiro/${d.id}`} className="p-4 font-medium text-ink-950">
               {d.full_name}
-            </Link>
+            </CardLink>
           ))}
         </div>
       </div>
@@ -47,63 +48,51 @@ export default async function FinanceiroPage() {
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-neutral-900">Financeiro · mês atual</h1>
-        <div className="flex gap-2">
-          <Link href="/financeiro/planos" className="rounded-md border border-neutral-300 px-3 py-2 text-sm hover:bg-neutral-50">
-            Planos
-          </Link>
-          <Link href="/financeiro/nova" className="rounded-md bg-red-700 px-3 py-2 text-sm font-medium text-white hover:bg-red-600">
-            Lançar mensalidade
-          </Link>
-        </div>
-      </div>
+      <PageHeader
+        title="Financeiro"
+        subtitle="Mês atual"
+        action={
+          <div className="flex gap-2">
+            <LinkButton href="/financeiro/planos" variant="secondary">
+              Planos
+            </LinkButton>
+            <LinkButton href="/financeiro/nova">Lançar mensalidade</LinkButton>
+          </div>
+        }
+      />
 
       {mensalidades.length === 0 ? (
-        <p className="text-sm text-neutral-500">Nenhuma mensalidade lançada para este mês ainda.</p>
+        <EmptyState icon={Wallet} message="Nenhuma mensalidade lançada para este mês ainda." />
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-neutral-200 bg-white shadow-sm">
+        <Card className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="border-b border-neutral-200 bg-neutral-50 text-left text-neutral-500">
+            <thead className="border-b border-ink-900/10 bg-ink-950/[0.02] text-left text-xs font-semibold uppercase tracking-wide text-ink-900/50">
               <tr>
-                <th className="px-4 py-2">Aluno</th>
-                <th className="px-4 py-2">Plano</th>
-                <th className="px-4 py-2">Valor</th>
-                <th className="px-4 py-2">Status</th>
+                <th className="px-4 py-3">Aluno</th>
+                <th className="px-4 py-3">Plano</th>
+                <th className="px-4 py-3">Valor</th>
+                <th className="px-4 py-3">Status</th>
               </tr>
             </thead>
             <tbody>
               {mensalidades.map((m) => (
-                <tr key={m.id} className="border-b border-neutral-100 last:border-0">
-                  <td className="px-4 py-2">
-                    <Link href={`/financeiro/${m.aluno_id}`} className="hover:underline">
+                <tr key={m.id} className="border-b border-ink-900/5 last:border-0 hover:bg-ink-950/[0.015]">
+                  <td className="px-4 py-3">
+                    <Link href={`/financeiro/${m.aluno_id}`} className="font-medium text-ink-950 hover:text-brand-700 hover:underline">
                       {m.aluno?.full_name ?? "—"}
                     </Link>
                   </td>
-                  <td className="px-4 py-2 text-neutral-500">{m.plano?.nome ?? "—"}</td>
-                  <td className="px-4 py-2">R$ {Number(m.valor).toFixed(2)}</td>
-                  <td className="px-4 py-2">
-                    <StatusBadge status={m.status} />
+                  <td className="px-4 py-3 text-ink-900/50">{m.plano?.nome ?? "—"}</td>
+                  <td className="px-4 py-3 font-medium text-ink-950">R$ {Number(m.valor).toFixed(2)}</td>
+                  <td className="px-4 py-3">
+                    <StatusMensalidadeBadge status={m.status} />
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-        </div>
+        </Card>
       )}
     </div>
-  );
-}
-
-function StatusBadge({ status }: { status: "pago" | "pendente" | "atrasado" }) {
-  const colors = {
-    pago: "bg-emerald-100 text-emerald-700",
-    pendente: "bg-amber-100 text-amber-700",
-    atrasado: "bg-red-100 text-red-700",
-  } as const;
-  return (
-    <span className={`rounded-full px-2 py-0.5 text-xs ${colors[status]}`}>
-      {STATUS_MENSALIDADE_LABELS[status]}
-    </span>
   );
 }

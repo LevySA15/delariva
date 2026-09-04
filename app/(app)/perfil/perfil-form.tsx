@@ -3,6 +3,8 @@
 import { useActionState } from "react";
 import { updateOwnProfile, type ProfileFormState } from "./actions";
 import { ROLE_LABELS, type UserRole } from "@/lib/domain";
+import { Field, inputClass } from "@/components/ui/field";
+import { Button } from "@/components/ui/button";
 
 const initialState: ProfileFormState = { error: null };
 
@@ -22,62 +24,44 @@ export function PerfilForm({
   const [state, formAction, pending] = useActionState(updateOwnProfile, initialState);
 
   return (
-    <form action={formAction} className="max-w-md space-y-4 rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
-      <div className="space-y-1">
-        <label htmlFor="full_name" className="text-sm text-neutral-600">
-          Nome completo
-        </label>
-        <input
-          id="full_name"
-          name="full_name"
-          defaultValue={fullName}
-          required
-          className="w-full rounded-md border border-neutral-300 px-3 py-2 outline-none focus:border-red-600"
-        />
-      </div>
+    <form
+      action={formAction}
+      className="max-w-md space-y-4 rounded-lg border border-ink-900/10 bg-white p-6 shadow-sm"
+    >
+      <Field label="Nome completo" htmlFor="full_name">
+        <input id="full_name" name="full_name" defaultValue={fullName} required className={inputClass} />
+      </Field>
 
-      <div className="space-y-1">
-        <label htmlFor="phone" className="text-sm text-neutral-600">
-          Telefone
-        </label>
-        <input
-          id="phone"
-          name="phone"
-          defaultValue={phone ?? ""}
-          placeholder="(00) 00000-0000"
-          className="w-full rounded-md border border-neutral-300 px-3 py-2 outline-none focus:border-red-600"
-        />
-      </div>
+      <Field label="Telefone" htmlFor="phone">
+        <input id="phone" name="phone" defaultValue={phone ?? ""} placeholder="(00) 00000-0000" className={inputClass} />
+      </Field>
 
-      <div className="space-y-1">
-        <span className="text-sm text-neutral-600">E-mail</span>
-        <p className="rounded-md bg-neutral-100 px-3 py-2 text-neutral-500">{email ?? "—"}</p>
-      </div>
+      <Field label="E-mail" htmlFor="email-display">
+        <p id="email-display" className="rounded-md bg-ink-950/[0.04] px-3 py-2 text-sm text-ink-900/60">
+          {email ?? "—"}
+        </p>
+      </Field>
 
-      <div className="space-y-1">
-        <span className="text-sm text-neutral-600">Perfil</span>
-        <p className="rounded-md bg-neutral-100 px-3 py-2 text-neutral-500">{ROLE_LABELS[role]}</p>
-      </div>
+      <Field label="Perfil" htmlFor="role-display">
+        <p id="role-display" className="rounded-md bg-ink-950/[0.04] px-3 py-2 text-sm text-ink-900/60">
+          {ROLE_LABELS[role]}
+        </p>
+      </Field>
 
       {birthDate && (
-        <div className="space-y-1">
-          <span className="text-sm text-neutral-600">Data de nascimento</span>
-          <p className="rounded-md bg-neutral-100 px-3 py-2 text-neutral-500">
+        <Field label="Data de nascimento" htmlFor="birth-display">
+          <p id="birth-display" className="rounded-md bg-ink-950/[0.04] px-3 py-2 text-sm text-ink-900/60">
             {new Date(birthDate + "T00:00:00").toLocaleDateString("pt-BR")}
           </p>
-        </div>
+        </Field>
       )}
 
-      {state.error && <p className="text-sm text-red-600">{state.error}</p>}
+      {state.error && <p className="text-sm text-brand-700">{state.error}</p>}
       {state.success && <p className="text-sm text-emerald-600">Dados atualizados!</p>}
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="w-full rounded-md bg-red-700 px-3 py-2 font-medium text-white transition hover:bg-red-600 disabled:opacity-60"
-      >
+      <Button type="submit" disabled={pending} className="w-full">
         {pending ? "Salvando..." : "Salvar alterações"}
-      </button>
+      </Button>
     </form>
   );
 }

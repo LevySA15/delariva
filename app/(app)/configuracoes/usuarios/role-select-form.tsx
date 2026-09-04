@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import { atualizarRole } from "../actions";
 import { ROLE_LABELS, type UserRole } from "@/lib/domain";
+import { inputClass } from "@/components/ui/field";
 
 const ROLES: UserRole[] = ["aluno", "aluno_menor", "responsavel", "professor", "dono"];
 
@@ -15,7 +16,7 @@ export function RoleSelectForm({ userId, role }: { userId: string; role: UserRol
         name="role"
         defaultValue={role}
         onChange={() => formRef.current?.requestSubmit()}
-        className="rounded-md border border-neutral-300 px-2 py-1 text-sm"
+        className={`${inputClass} py-1.5 text-sm`}
       >
         {ROLES.map((r) => (
           <option key={r} value={r}>

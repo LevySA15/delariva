@@ -2,6 +2,9 @@ import { redirect } from "next/navigation";
 import { requireProfile } from "@/lib/supabase/current-user";
 import { createClient } from "@/lib/supabase/server";
 import { listPlanos } from "@/lib/queries/financeiro";
+import { PageHeader } from "@/components/ui/page-header";
+import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { PlanosForm } from "./planos-form";
 
 export default async function PlanosPage() {
@@ -13,20 +16,23 @@ export default async function PlanosPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-neutral-900">Planos</h1>
+      <PageHeader title="Planos" />
       <PlanosForm />
 
-      <ul className="space-y-2">
-        {planos.map((p) => (
-          <li key={p.id} className="flex items-center justify-between rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
-            <span className="font-medium text-neutral-900">{p.nome}</span>
-            <span className="text-sm text-neutral-500">
-              R$ {Number(p.valor).toFixed(2)} · {p.periodicidade}
-            </span>
-          </li>
-        ))}
-        {planos.length === 0 && <p className="text-sm text-neutral-500">Nenhum plano cadastrado.</p>}
-      </ul>
+      {planos.length === 0 ? (
+        <EmptyState message="Nenhum plano cadastrado." />
+      ) : (
+        <div className="space-y-2">
+          {planos.map((p) => (
+            <Card key={p.id} className="flex items-center justify-between p-4">
+              <span className="font-semibold text-ink-950">{p.nome}</span>
+              <span className="text-sm text-ink-900/50">
+                R$ {Number(p.valor).toFixed(2)} · {p.periodicidade}
+              </span>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

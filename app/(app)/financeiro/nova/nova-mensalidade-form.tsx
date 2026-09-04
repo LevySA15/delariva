@@ -2,6 +2,8 @@
 
 import { useActionState, useState } from "react";
 import { lancarMensalidade, type FormState } from "../actions";
+import { Field, inputClass } from "@/components/ui/field";
+import { Button } from "@/components/ui/button";
 
 const initialState: FormState = { error: null };
 
@@ -18,12 +20,9 @@ export function NovaMensalidadeForm({
   const planoSelecionado = planos.find((p) => p.id === planoId);
 
   return (
-    <form action={formAction} className="max-w-lg space-y-4 rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
-      <div className="space-y-1">
-        <label htmlFor="aluno_id" className="text-sm text-neutral-600">
-          Aluno
-        </label>
-        <select id="aluno_id" name="aluno_id" required className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm">
+    <form action={formAction} className="max-w-lg space-y-4 rounded-lg border border-ink-900/10 bg-white p-6 shadow-sm">
+      <Field label="Aluno" htmlFor="aluno_id">
+        <select id="aluno_id" name="aluno_id" required className={inputClass}>
           <option value="">Selecione...</option>
           {alunos.map((a) => (
             <option key={a.id} value={a.id}>
@@ -31,18 +30,15 @@ export function NovaMensalidadeForm({
             </option>
           ))}
         </select>
-      </div>
+      </Field>
 
-      <div className="space-y-1">
-        <label htmlFor="plano_id" className="text-sm text-neutral-600">
-          Plano (opcional)
-        </label>
+      <Field label="Plano (opcional)" htmlFor="plano_id">
         <select
           id="plano_id"
           name="plano_id"
           value={planoId}
           onChange={(e) => setPlanoId(e.target.value)}
-          className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
+          className={inputClass}
         >
           <option value="">Nenhum</option>
           {planos.map((p) => (
@@ -51,26 +47,13 @@ export function NovaMensalidadeForm({
             </option>
           ))}
         </select>
-      </div>
+      </Field>
 
       <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-1">
-          <label htmlFor="mes_referencia" className="text-sm text-neutral-600">
-            Mês de referência
-          </label>
-          <input
-            id="mes_referencia"
-            name="mes_referencia"
-            type="date"
-            defaultValue={mesAtual}
-            required
-            className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
-          />
-        </div>
-        <div className="space-y-1">
-          <label htmlFor="valor" className="text-sm text-neutral-600">
-            Valor (R$)
-          </label>
+        <Field label="Mês de referência" htmlFor="mes_referencia">
+          <input id="mes_referencia" name="mes_referencia" type="date" defaultValue={mesAtual} required className={inputClass} />
+        </Field>
+        <Field label="Valor (R$)" htmlFor="valor">
           <input
             id="valor"
             name="valor"
@@ -80,20 +63,16 @@ export function NovaMensalidadeForm({
             defaultValue={planoSelecionado?.valor}
             key={planoSelecionado?.id ?? "sem-plano"}
             required
-            className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
+            className={inputClass}
           />
-        </div>
+        </Field>
       </div>
 
-      {state.error && <p className="text-sm text-red-600">{state.error}</p>}
+      {state.error && <p className="text-sm text-brand-700">{state.error}</p>}
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="w-full rounded-md bg-red-700 px-3 py-2 font-medium text-white hover:bg-red-600 disabled:opacity-60"
-      >
+      <Button type="submit" disabled={pending} className="w-full">
         {pending ? "Salvando..." : "Lançar mensalidade"}
-      </button>
+      </Button>
     </form>
   );
 }

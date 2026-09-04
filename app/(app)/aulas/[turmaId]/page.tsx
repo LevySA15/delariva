@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { X, Clock, CalendarCheck, ClipboardList } from "lucide-react";
 import { requireProfile } from "@/lib/supabase/current-user";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -13,6 +14,10 @@ import {
   todayISO,
 } from "@/lib/queries/turmas";
 import { DIAS_SEMANA_LABELS } from "@/lib/domain";
+import { PageHeader } from "@/components/ui/page-header";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import {
   adicionarProfessor,
   desmatricularAluno,
@@ -44,58 +49,55 @@ export default async function TurmaDetailPage({
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold text-neutral-900">{turma.nome}</h1>
-        <p className="mt-1 text-sm text-neutral-500">
-          {turma.dias_semana.map((d) => DIAS_SEMANA_LABELS[d]).join(", ")} ·{" "}
-          {turma.horario_inicio.slice(0, 5)} às {turma.horario_fim.slice(0, 5)} ·{" "}
-          {turma.faixa_etaria === "adulto" ? "Adulto" : "Infantil"}
-        </p>
-      </div>
+      <PageHeader
+        title={turma.nome}
+        subtitle={`${turma.dias_semana.map((d) => DIAS_SEMANA_LABELS[d]).join(", ")} · ${turma.horario_inicio.slice(0, 5)} às ${turma.horario_fim.slice(0, 5)} · ${turma.faixa_etaria === "adulto" ? "Adulto" : "Infantil"}`}
+      />
 
       <section>
-        <h2 className="mb-3 text-lg font-semibold text-neutral-900">Professores</h2>
+        <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wide text-ink-900/60">Professores</h2>
         <ul className="mb-3 flex flex-wrap gap-2">
           {professores.map((p) => (
-            <li
-              key={p.id}
-              className="flex items-center gap-2 rounded-full bg-neutral-100 px-3 py-1 text-sm text-neutral-700"
-            >
-              {p.full_name}
-              {podeGerenciar && (
-                <form action={removerProfessor.bind(null, turmaId, p.id)}>
-                  <button type="submit" className="text-neutral-400 hover:text-red-600">
-                    ×
-                  </button>
-                </form>
-              )}
+            <li key={p.id}>
+              <Badge tone="ink" className="gap-2 py-1 pl-3 pr-1.5 text-[13px]">
+                {p.full_name}
+                {podeGerenciar && (
+                  <form action={removerProfessor.bind(null, turmaId, p.id)}>
+                    <button type="submit" className="rounded-full p-0.5 text-white/50 hover:bg-white/10 hover:text-white">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </form>
+                )}
+              </Badge>
             </li>
           ))}
-          {professores.length === 0 && <li className="text-sm text-neutral-500">Nenhum professor atribuído.</li>}
+          {professores.length === 0 && <li className="text-sm text-ink-900/40">Nenhum professor atribuído.</li>}
         </ul>
         {podeGerenciar && <AdicionarProfessorForm supabase={supabase} turmaId={turmaId} jaAtribuidos={professores.map((p) => p.id)} />}
       </section>
 
       <section>
-        <h2 className="mb-3 text-lg font-semibold text-neutral-900">Alunos matriculados ({alunos.length})</h2>
+        <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wide text-ink-900/60">
+          Alunos matriculados ({alunos.length})
+        </h2>
         {(podeGerenciar || souProfessorDaTurma) && (
-          <ul className="mb-3 space-y-1">
+          <ul className="mb-3 space-y-1.5">
             {alunos.map((a) => (
               <li
                 key={a.id}
-                className="flex items-center justify-between rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm"
+                className="flex items-center justify-between rounded-md border border-ink-900/10 bg-white px-3 py-2 text-sm text-ink-950"
               >
                 {a.full_name}
                 {podeGerenciar && (
                   <form action={desmatricularAluno.bind(null, turmaId, a.id)}>
-                    <button type="submit" className="text-xs text-neutral-400 hover:text-red-600">
+                    <button type="submit" className="text-xs font-medium text-ink-900/40 hover:text-brand-700">
                       remover
                     </button>
                   </form>
                 )}
               </li>
             ))}
-            {alunos.length === 0 && <li className="text-sm text-neutral-500">Nenhum aluno matriculado.</li>}
+            {alunos.length === 0 && <li className="text-sm text-ink-900/40">Nenhum aluno matriculado.</li>}
           </ul>
         )}
         {podeGerenciar && <MatricularAlunoForm supabase={supabase} turmaId={turmaId} jaMatriculados={alunos.map((a) => a.id)} />}
@@ -103,14 +105,20 @@ export default async function TurmaDetailPage({
 
       {podeFazerCheckin && (
         <section>
-          <h2 className="mb-3 text-lg font-semibold text-neutral-900">Chamada de hoje ({todayISO()})</h2>
+          <h2 className="mb-3 flex items-center gap-2 font-display text-sm font-semibold uppercase tracking-wide text-ink-900/60">
+            <CalendarCheck className="h-4 w-4 text-brand-600" />
+            Chamada de hoje ({todayISO()})
+          </h2>
           <CheckinForm supabase={supabase} turmaId={turmaId} alunos={alunos} />
         </section>
       )}
 
       {(profile.role === "aluno" || profile.role === "aluno_menor") && (
         <section>
-          <h2 className="mb-3 text-lg font-semibold text-neutral-900">Minha frequência</h2>
+          <h2 className="mb-3 flex items-center gap-2 font-display text-sm font-semibold uppercase tracking-wide text-ink-900/60">
+            <ClipboardList className="h-4 w-4 text-brand-600" />
+            Minha frequência
+          </h2>
           <HistoricoPresenca supabase={supabase} turmaId={turmaId} alunoId={profile.id} />
         </section>
       )}
@@ -134,16 +142,16 @@ async function AdicionarProfessorForm({
 
   return (
     <form action={adicionarProfessor.bind(null, turmaId)} className="flex max-w-sm gap-2">
-      <select name="professor_id" className="flex-1 rounded-md border border-neutral-300 px-3 py-1.5 text-sm">
+      <select name="professor_id" className="flex-1 rounded-md border border-ink-900/15 bg-white px-3 py-1.5 text-sm">
         {disponiveis.map((p) => (
           <option key={p.id} value={p.id}>
             {p.full_name}
           </option>
         ))}
       </select>
-      <button type="submit" className="rounded-md bg-neutral-900 px-3 py-1.5 text-sm text-white hover:bg-neutral-800">
+      <Button type="submit" variant="secondary" size="sm">
         Adicionar
-      </button>
+      </Button>
     </form>
   );
 }
@@ -164,16 +172,16 @@ async function MatricularAlunoForm({
 
   return (
     <form action={matricularAluno.bind(null, turmaId)} className="flex max-w-sm gap-2">
-      <select name="aluno_id" className="flex-1 rounded-md border border-neutral-300 px-3 py-1.5 text-sm">
+      <select name="aluno_id" className="flex-1 rounded-md border border-ink-900/15 bg-white px-3 py-1.5 text-sm">
         {disponiveis.map((a) => (
           <option key={a.id} value={a.id}>
             {a.full_name}
           </option>
         ))}
       </select>
-      <button type="submit" className="rounded-md bg-neutral-900 px-3 py-1.5 text-sm text-white hover:bg-neutral-800">
+      <Button type="submit" variant="secondary" size="sm">
         Matricular
-      </button>
+      </Button>
     </form>
   );
 }
@@ -188,7 +196,7 @@ async function CheckinForm({
   alunos: { id: string; full_name: string }[];
 }) {
   if (alunos.length === 0) {
-    return <p className="text-sm text-neutral-500">Matricule alunos para poder fazer a chamada.</p>;
+    return <EmptyState message="Matricule alunos para poder fazer a chamada." />;
   }
 
   const {
@@ -199,17 +207,23 @@ async function CheckinForm({
   const presentesHoje = new Set(presencas.filter((p) => p.presente).map((p) => p.aluno_id));
 
   return (
-    <form action={registrarPresenca.bind(null, turmaId)} className="space-y-2 rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
+    <form
+      action={registrarPresenca.bind(null, turmaId)}
+      className="space-y-1 rounded-lg border border-ink-900/10 bg-white p-4 shadow-sm"
+    >
       {alunos.map((a) => (
-        <label key={a.id} className="flex items-center gap-2 text-sm text-neutral-700">
+        <label
+          key={a.id}
+          className="flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm text-ink-900/80 hover:bg-ink-950/[0.03]"
+        >
           <input type="hidden" name="aluno_id" value={a.id} />
-          <input type="checkbox" name="presente" value={a.id} defaultChecked={presentesHoje.has(a.id)} />
+          <input type="checkbox" name="presente" value={a.id} defaultChecked={presentesHoje.has(a.id)} className="h-4 w-4 accent-brand-600" />
           {a.full_name}
         </label>
       ))}
-      <button type="submit" className="mt-2 rounded-md bg-red-700 px-3 py-1.5 text-sm text-white hover:bg-red-600">
+      <Button type="submit" size="sm" className="mt-2">
         Salvar chamada
-      </button>
+      </Button>
     </form>
   );
 }
@@ -226,20 +240,21 @@ async function HistoricoPresenca({
   const historico = await getHistoricoPresencaAluno(supabase, turmaId, alunoId);
 
   if (historico.length === 0) {
-    return <p className="text-sm text-neutral-500">Ainda sem registros de presença nesta turma.</p>;
+    return <EmptyState message="Ainda sem registros de presença nesta turma." />;
   }
 
   return (
-    <ul className="space-y-1">
+    <ul className="space-y-1.5">
       {historico.map((h) => (
         <li
           key={h.aulaId}
-          className="flex items-center justify-between rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm"
+          className="flex items-center justify-between rounded-md border border-ink-900/10 bg-white px-3 py-2 text-sm"
         >
-          <span>{new Date(h.data + "T00:00:00").toLocaleDateString("pt-BR")}</span>
-          <span className={h.presente ? "text-emerald-600" : "text-red-600"}>
-            {h.presente ? "Presente" : "Faltou"}
+          <span className="flex items-center gap-1.5 text-ink-900/70">
+            <Clock className="h-3.5 w-3.5" />
+            {new Date(h.data + "T00:00:00").toLocaleDateString("pt-BR")}
           </span>
+          <Badge tone={h.presente ? "success" : "danger"}>{h.presente ? "Presente" : "Faltou"}</Badge>
         </li>
       ))}
     </ul>

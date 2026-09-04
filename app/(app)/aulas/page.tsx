@@ -1,8 +1,13 @@
-import Link from "next/link";
+import { Clock, Swords } from "lucide-react";
 import { requireProfile } from "@/lib/supabase/current-user";
 import { createClient } from "@/lib/supabase/server";
 import { listTurmas } from "@/lib/queries/turmas";
 import { DIAS_SEMANA_LABELS } from "@/lib/domain";
+import { PageHeader } from "@/components/ui/page-header";
+import { CardLink } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
+import { LinkButton } from "@/components/ui/button";
 
 export default async function AulasPage() {
   const profile = await requireProfile();
@@ -11,39 +16,31 @@ export default async function AulasPage() {
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-neutral-900">Aulas</h1>
-        {profile.role === "dono" && (
-          <Link
-            href="/aulas/nova"
-            className="rounded-md bg-red-700 px-4 py-2 text-sm font-medium text-white hover:bg-red-600"
-          >
-            Nova turma
-          </Link>
-        )}
-      </div>
+      <PageHeader
+        title="Aulas"
+        action={
+          profile.role === "dono" && <LinkButton href="/aulas/nova">Nova turma</LinkButton>
+        }
+      />
 
       {turmas.length === 0 ? (
-        <p className="text-sm text-neutral-500">Nenhuma turma encontrada.</p>
+        <EmptyState icon={Swords} message="Nenhuma turma encontrada." />
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {turmas.map((turma) => (
-            <Link
-              key={turma.id}
-              href={`/aulas/${turma.id}`}
-              className="rounded-xl border border-neutral-200 bg-white p-4 shadow-sm transition hover:border-red-300"
-            >
-              <p className="font-semibold text-neutral-900">{turma.nome}</p>
-              <p className="mt-1 text-sm text-neutral-500">
+            <CardLink key={turma.id} href={`/aulas/${turma.id}`} className="p-4">
+              <p className="font-semibold text-ink-950">{turma.nome}</p>
+              <p className="mt-2 text-sm text-ink-900/60">
                 {turma.dias_semana.map((d) => DIAS_SEMANA_LABELS[d]).join(", ")}
               </p>
-              <p className="text-sm text-neutral-500">
+              <p className="flex items-center gap-1.5 text-sm text-ink-900/60">
+                <Clock className="h-3.5 w-3.5" />
                 {turma.horario_inicio.slice(0, 5)} às {turma.horario_fim.slice(0, 5)}
               </p>
-              <span className="mt-2 inline-block rounded-full bg-neutral-100 px-2 py-0.5 text-xs text-neutral-600">
+              <Badge tone={turma.faixa_etaria === "adulto" ? "ink" : "brand"} className="mt-3">
                 {turma.faixa_etaria === "adulto" ? "Adulto" : "Infantil"}
-              </span>
-            </Link>
+              </Badge>
+            </CardLink>
           ))}
         </div>
       )}
