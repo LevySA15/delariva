@@ -36,7 +36,12 @@ export async function getAlunosDaTurma(supabase: DB, turmaId: string) {
 }
 
 export async function listProfessores(supabase: DB) {
-  const { data } = await supabase.from("profiles").select("id, full_name").eq("role", "professor").order("full_name");
+  // inclui "dono" porque o dono da academia pode acumular a função de professor
+  const { data } = await supabase
+    .from("profiles")
+    .select("id, full_name")
+    .in("role", ["professor", "dono"])
+    .order("full_name");
   return data ?? [];
 }
 
