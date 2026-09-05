@@ -7,6 +7,7 @@ import { Card, CardLink } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/empty-state";
 import { FaixaBadge } from "@/components/ui/faixa-badge";
+import { BarChart } from "@/components/ui/bar-chart";
 import {
   getAlunoStats,
   getDependentes,
@@ -15,6 +16,7 @@ import {
   getMuralRecente,
   getProfessorStats,
 } from "@/lib/queries/dashboard";
+import { getReceitaMensal } from "@/lib/queries/financeiro";
 
 export default async function DashboardPage() {
   const profile = await requireProfile();
@@ -56,14 +58,23 @@ export default async function DashboardPage() {
 
 async function DonoStats() {
   const supabase = await createClient();
-  const stats = await getDonoStats(supabase);
+  const [stats, receita] = await Promise.all([getDonoStats(supabase), getReceitaMensal(supabase, 6)]);
 
   return (
-    <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-      <StatCard label="Alunos" value={stats.alunos} icon={Users} />
-      <StatCard label="Professores" value={stats.professores} icon={GraduationCap} />
-      <StatCard label="Turmas ativas" value={stats.turmasAtivas} icon={Swords} />
-      <StatCard label="Mensalidades pendentes" value={stats.mensalidadesPendentes} hint="mês atual" icon={Wallet} />
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+        <StatCard label="Alunos" value={stats.alunos} icon={Users} />
+        <StatCard label="Professores" value={stats.professores} icon={GraduationCap} />
+        <StatCard label="Turmas ativas" value={stats.turmasAtivas} icon={Swords} />
+        <StatCard label="Mensalidades pendentes" value={stats.mensalidadesPendentes} hint="mês atual" icon={Wallet} />
+      </div>
+
+      <Card className="p-4">
+        <p className="mb-4 font-display text-sm font-semibold uppercase tracking-wide text-ink-900/60">
+          Receita paga · últimos 6 meses
+        </p>
+        <BarChart data={receita} formatValue={(v) => `R$ ${v.toFixed(0)}`} />
+      </Card>
     </div>
   );
 }
