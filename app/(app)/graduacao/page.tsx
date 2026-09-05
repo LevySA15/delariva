@@ -1,13 +1,10 @@
 import { redirect } from "next/navigation";
-import { Award } from "lucide-react";
 import { requireProfile } from "@/lib/supabase/current-user";
 import { createClient } from "@/lib/supabase/server";
 import { getDependentes } from "@/lib/queries/dashboard";
 import { listAlunosDoProfessor, listTodosAlunos } from "@/lib/queries/graduacao";
 import { PageHeader } from "@/components/ui/page-header";
-import { CardLink } from "@/components/ui/card";
-import { EmptyState } from "@/components/ui/empty-state";
-import { FaixaBadge } from "@/components/ui/faixa-badge";
+import { AlunosList } from "./alunos-list";
 
 export default async function GraduacaoIndexPage() {
   const profile = await requireProfile();
@@ -35,20 +32,7 @@ export default async function GraduacaoIndexPage() {
   return (
     <div>
       <PageHeader title="Graduação" />
-      {alunos.length === 0 ? (
-        <EmptyState icon={Award} message="Nenhum aluno encontrado." />
-      ) : (
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
-          {alunos.map((a) => (
-            <CardLink key={a.id} href={`/graduacao/${a.id}`} className="p-4">
-              <p className="font-semibold text-ink-950">{a.full_name}</p>
-              <div className="mt-2">
-                {a.faixa ? <FaixaBadge faixa={a.faixa.faixa} grau={a.faixa.grau} /> : <span className="text-sm text-ink-900/40">sem graduação</span>}
-              </div>
-            </CardLink>
-          ))}
-        </div>
-      )}
+      <AlunosList alunos={alunos} />
     </div>
   );
 }
