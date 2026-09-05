@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { StatusMensalidadeBadge } from "@/components/ui/status-badge";
 import { inputClass } from "@/components/ui/field";
-import { marcarPago, marcarStatus } from "../actions";
+import { marcarPago, marcarStatus, atualizarDesconto } from "../actions";
 
 export default async function FinanceiroAlunoPage({
   params,
@@ -27,7 +27,11 @@ export default async function FinanceiroAlunoPage({
   }
 
   const supabase = await createClient();
-  const { data: aluno } = await supabase.from("profiles").select("id, full_name").eq("id", alunoId).single();
+  const { data: aluno } = await supabase
+    .from("profiles")
+    .select("id, full_name, desconto_percentual")
+    .eq("id", alunoId)
+    .single();
   if (!aluno) notFound();
 
   const mensalidades = await getMensalidades(supabase, alunoId);
@@ -36,6 +40,28 @@ export default async function FinanceiroAlunoPage({
   return (
     <div className="space-y-6">
       <PageHeader title="Financeiro" subtitle={aluno.full_name} />
+
+      {podeGerenciar && (
+        <Card className="max-w-sm p-4">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-900/50">Desconto/bolsa padrão</p>
+          <form action={atualizarDesconto.bind(null, alunoId)} className="flex items-center gap-2">
+            <input
+              name="desconto_percentual"
+              type="number"
+              min={0}
+              max={100}
+              step={1}
+              defaultValue={aluno.desconto_percentual}
+              className={`w-24 ${inputClass}`}
+            />
+            <span className="text-sm text-ink-900/50">%</span>
+            <Button type="submit" size="sm" variant="secondary" className="ml-auto">
+              Salvar
+            </Button>
+          </form>
+          <p className="mt-2 text-xs text-ink-900/40">Sugerido automaticamente ao lançar uma nova mensalidade.</p>
+        </Card>
+      )}
 
       {mensalidades.length === 0 ? (
         <EmptyState icon={Wallet} message="Nenhuma mensalidade lançada ainda." />

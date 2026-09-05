@@ -30,9 +30,32 @@ export async function listMensalidadesDoMes(supabase: DB) {
 export async function listAlunosAtivos(supabase: DB) {
   const { data } = await supabase
     .from("profiles")
-    .select("id, full_name")
+    .select("id, full_name, desconto_percentual")
     .in("role", ["aluno", "aluno_menor"])
     .order("full_name");
+  return data ?? [];
+}
+
+export async function getAlunoComDesconto(supabase: DB, alunoId: string) {
+  const { data } = await supabase
+    .from("profiles")
+    .select("id, full_name, desconto_percentual")
+    .eq("id", alunoId)
+    .single();
+  return data;
+}
+
+export async function listInadimplencia(supabase: DB, inicio?: string, fim?: string) {
+  let query = supabase
+    .from("mensalidades")
+    .select("*, aluno:profiles!mensalidades_aluno_id_fkey(full_name), plano:planos(nome)")
+    .in("status", ["pendente", "atrasado"])
+    .order("mes_referencia", { ascending: false });
+
+  if (inicio) query = query.gte("mes_referencia", inicio);
+  if (fim) query = query.lte("mes_referencia", fim);
+
+  const { data } = await query;
   return data ?? [];
 }
 

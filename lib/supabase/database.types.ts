@@ -27,6 +27,7 @@ export interface Database {
           role: UserRole;
           birth_date: string | null;
           faixa_categoria: FaixaCategoria | null;
+          desconto_percentual: number;
           created_at: string;
           updated_at: string;
         };

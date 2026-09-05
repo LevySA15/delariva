@@ -70,3 +70,14 @@ export async function marcarStatus(mensalidadeId: string, alunoId: string, statu
   revalidatePath(`/financeiro/${alunoId}`);
   revalidatePath("/financeiro");
 }
+
+export async function atualizarDesconto(alunoId: string, formData: FormData) {
+  const desconto = Number(formData.get("desconto_percentual") ?? 0);
+  const supabase = await createClient();
+  await supabase
+    .from("profiles")
+    .update({ desconto_percentual: Math.min(100, Math.max(0, desconto)) })
+    .eq("id", alunoId);
+
+  revalidatePath(`/financeiro/${alunoId}`);
+}

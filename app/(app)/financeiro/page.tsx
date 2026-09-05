@@ -50,6 +50,9 @@ export default async function FinanceiroPage() {
         subtitle="Mês atual"
         action={
           <div className="flex gap-2">
+            <LinkButton href="/financeiro/inadimplencia" variant="secondary">
+              Inadimplência
+            </LinkButton>
             <LinkButton href="/financeiro/planos" variant="secondary">
               Planos
             </LinkButton>
