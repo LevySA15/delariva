@@ -51,6 +51,17 @@ export function NovaTurmaForm() {
         </Field>
       </div>
 
+      <Field label="Capacidade máxima de vagas (opcional)" htmlFor="capacidade_maxima">
+        <input
+          id="capacidade_maxima"
+          name="capacidade_maxima"
+          type="number"
+          min={1}
+          placeholder="Sem limite"
+          className={inputClass}
+        />
+      </Field>
+
       {state.error && <p className="text-sm text-brand-700">{state.error}</p>}
 
       <Button type="submit" disabled={pending} className="w-full">

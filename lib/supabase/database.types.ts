@@ -77,6 +77,7 @@ export interface Database {
           horario_inicio: string;
           horario_fim: string;
           ativo: boolean;
+          capacidade_maxima: number | null;
           created_at: string;
         };
         Insert: Partial<Database["public"]["Tables"]["turmas"]["Row"]> & {
@@ -486,6 +487,35 @@ export interface Database {
         };
         Update: Partial<Database["public"]["Tables"]["chat_leituras"]["Row"]>;
         Relationships: [];
+      };
+      lista_espera: {
+        Row: {
+          id: string;
+          turma_id: string;
+          aluno_id: string;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["lista_espera"]["Row"]> & {
+          turma_id: string;
+          aluno_id: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["lista_espera"]["Row"]>;
+        Relationships: [
+          {
+            foreignKeyName: "lista_espera_turma_id_fkey";
+            columns: ["turma_id"];
+            isOneToOne: false;
+            referencedRelation: "turmas";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "lista_espera_aluno_id_fkey";
+            columns: ["aluno_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
     };
     Views: Record<string, never>;

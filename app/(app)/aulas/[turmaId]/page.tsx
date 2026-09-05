@@ -1,10 +1,11 @@
 import { notFound } from "next/navigation";
-import { X, Clock, CalendarCheck, ClipboardList } from "lucide-react";
+import { X, Clock, CalendarCheck, ClipboardList, Hourglass } from "lucide-react";
 import { requireProfile } from "@/lib/supabase/current-user";
 import { createClient } from "@/lib/supabase/server";
 import {
   getAlunosDaTurma,
   getHistoricoPresencaAluno,
+  getListaEspera,
   getPresencasDaAula,
   getProfessoresDaTurma,
   getOrCreateAulaHoje,
@@ -18,11 +19,15 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
+import { inputClass } from "@/components/ui/field";
 import {
   adicionarProfessor,
+  atualizarCapacidade,
   desmatricularAluno,
   matricularAluno,
+  promoverDaListaEspera,
   registrarPresenca,
+  removerDaListaEspera,
   removerProfessor,
 } from "./actions";
 
@@ -38,21 +43,27 @@ export default async function TurmaDetailPage({
   const turma = await getTurma(supabase, turmaId);
   if (!turma) notFound();
 
-  const [professores, alunos] = await Promise.all([
+  const [professores, alunos, listaEspera] = await Promise.all([
     getProfessoresDaTurma(supabase, turmaId),
     getAlunosDaTurma(supabase, turmaId),
+    getListaEspera(supabase, turmaId),
   ]);
 
   const souProfessorDaTurma = professores.some((p) => p.id === profile.id);
   const podeGerenciar = profile.role === "dono";
   const podeFazerCheckin = podeGerenciar || souProfessorDaTurma;
+  const turmaCheia = turma.capacidade_maxima !== null && alunos.length >= turma.capacidade_maxima;
+
+  const subtitlePartes = [
+    turma.dias_semana.map((d) => DIAS_SEMANA_LABELS[d]).join(", "),
+    `${turma.horario_inicio.slice(0, 5)} às ${turma.horario_fim.slice(0, 5)}`,
+    turma.faixa_etaria === "adulto" ? "Adulto" : "Infantil",
+    turma.capacidade_maxima !== null ? `${alunos.length}/${turma.capacidade_maxima} vagas` : null,
+  ].filter(Boolean);
 
   return (
     <div className="space-y-8">
-      <PageHeader
-        title={turma.nome}
-        subtitle={`${turma.dias_semana.map((d) => DIAS_SEMANA_LABELS[d]).join(", ")} · ${turma.horario_inicio.slice(0, 5)} às ${turma.horario_fim.slice(0, 5)} · ${turma.faixa_etaria === "adulto" ? "Adulto" : "Infantil"}`}
-      />
+      <PageHeader title={turma.nome} subtitle={subtitlePartes.join(" · ")} />
 
       <section>
         <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wide text-ink-900/60">Professores</h2>
@@ -78,7 +89,8 @@ export default async function TurmaDetailPage({
 
       <section>
         <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wide text-ink-900/60">
-          Alunos matriculados ({alunos.length})
+          Alunos matriculados ({alunos.length}
+          {turma.capacidade_maxima !== null ? `/${turma.capacidade_maxima}` : ""})
         </h2>
         {(podeGerenciar || souProfessorDaTurma) && (
           <ul className="mb-3 space-y-1.5">
@@ -100,8 +112,75 @@ export default async function TurmaDetailPage({
             {alunos.length === 0 && <li className="text-sm text-ink-900/40">Nenhum aluno matriculado.</li>}
           </ul>
         )}
-        {podeGerenciar && <MatricularAlunoForm supabase={supabase} turmaId={turmaId} jaMatriculados={alunos.map((a) => a.id)} />}
+        {podeGerenciar && (
+          <div className="space-y-3">
+            <MatricularAlunoForm
+              supabase={supabase}
+              turmaId={turmaId}
+              jaMatriculados={alunos.map((a) => a.id)}
+              jaNaEspera={listaEspera.map((l) => l.aluno_id)}
+              turmaCheia={turmaCheia}
+            />
+            <form
+              action={atualizarCapacidade.bind(null, turmaId)}
+              className="flex max-w-sm items-end gap-2"
+            >
+              <label className="flex-1 space-y-1.5">
+                <span className="text-xs font-semibold uppercase tracking-wide text-ink-900/50">
+                  Capacidade máxima de vagas
+                </span>
+                <input
+                  name="capacidade_maxima"
+                  type="number"
+                  min={1}
+                  defaultValue={turma.capacidade_maxima ?? ""}
+                  placeholder="Sem limite"
+                  className={inputClass}
+                />
+              </label>
+              <Button type="submit" variant="secondary" size="sm">
+                Salvar
+              </Button>
+            </form>
+          </div>
+        )}
       </section>
+
+      {listaEspera.length > 0 && (podeGerenciar || souProfessorDaTurma) && (
+        <section>
+          <h2 className="mb-3 flex items-center gap-2 font-display text-sm font-semibold uppercase tracking-wide text-ink-900/60">
+            <Hourglass className="h-4 w-4 text-brand-600" />
+            Lista de espera ({listaEspera.length})
+          </h2>
+          <ul className="space-y-1.5">
+            {listaEspera.map((item, i) => (
+              <li
+                key={item.id}
+                className="flex items-center justify-between rounded-md border border-ink-900/10 bg-white px-3 py-2 text-sm text-ink-950"
+              >
+                <span>
+                  <span className="mr-2 text-xs font-semibold text-ink-900/40">{i + 1}º</span>
+                  {item.aluno.full_name}
+                </span>
+                {podeGerenciar && (
+                  <div className="flex items-center gap-3">
+                    <form action={promoverDaListaEspera.bind(null, turmaId, item.aluno_id)}>
+                      <button type="submit" className="text-xs font-medium text-brand-600 hover:underline">
+                        matricular
+                      </button>
+                    </form>
+                    <form action={removerDaListaEspera.bind(null, turmaId, item.aluno_id)}>
+                      <button type="submit" className="text-xs font-medium text-ink-900/40 hover:text-brand-700">
+                        remover
+                      </button>
+                    </form>
+                  </div>
+                )}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {podeFazerCheckin && (
         <section>
@@ -160,13 +239,17 @@ async function MatricularAlunoForm({
   supabase,
   turmaId,
   jaMatriculados,
+  jaNaEspera,
+  turmaCheia,
 }: {
   supabase: Awaited<ReturnType<typeof createClient>>;
   turmaId: string;
   jaMatriculados: string[];
+  jaNaEspera: string[];
+  turmaCheia: boolean;
 }) {
   const alunos = await listAlunos(supabase);
-  const disponiveis = alunos.filter((a) => !jaMatriculados.includes(a.id));
+  const disponiveis = alunos.filter((a) => !jaMatriculados.includes(a.id) && !jaNaEspera.includes(a.id));
 
   if (disponiveis.length === 0) return null;
 
@@ -180,7 +263,7 @@ async function MatricularAlunoForm({
         ))}
       </select>
       <Button type="submit" variant="secondary" size="sm">
-        Matricular
+        {turmaCheia ? "Adicionar à lista de espera" : "Matricular"}
       </Button>
     </form>
   );

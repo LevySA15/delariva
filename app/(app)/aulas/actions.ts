@@ -15,12 +15,17 @@ export async function criarTurma(
   const horarioInicio = String(formData.get("horario_inicio") ?? "");
   const horarioFim = String(formData.get("horario_fim") ?? "");
   const diasSemana = formData.getAll("dias_semana").map((d) => Number(d));
+  const capacidadeRaw = String(formData.get("capacidade_maxima") ?? "").trim();
+  const capacidadeMaxima = capacidadeRaw ? Number(capacidadeRaw) : null;
 
   if (!nome || !horarioInicio || !horarioFim) {
     return { error: "Preencha nome e horários da turma." };
   }
   if (diasSemana.length === 0) {
     return { error: "Selecione ao menos um dia da semana." };
+  }
+  if (capacidadeMaxima !== null && (!Number.isFinite(capacidadeMaxima) || capacidadeMaxima <= 0)) {
+    return { error: "Capacidade máxima precisa ser um número maior que zero." };
   }
 
   const supabase = await createClient();
@@ -32,6 +37,7 @@ export async function criarTurma(
       horario_inicio: horarioInicio,
       horario_fim: horarioFim,
       dias_semana: diasSemana,
+      capacidade_maxima: capacidadeMaxima,
     })
     .select("id")
     .single();

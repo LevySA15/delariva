@@ -31,9 +31,33 @@ export async function matricularAluno(turmaId: string, formData: FormData) {
   if (!alunoId) return;
 
   const supabase = await createClient();
+
+  const { data: turma } = await supabase
+    .from("turmas")
+    .select("capacidade_maxima")
+    .eq("id", turmaId)
+    .single();
+
+  if (turma?.capacidade_maxima) {
+    const { count } = await supabase
+      .from("matriculas")
+      .select("id", { count: "exact", head: true })
+      .eq("turma_id", turmaId)
+      .eq("ativo", true);
+
+    if ((count ?? 0) >= turma.capacidade_maxima) {
+      await supabase
+        .from("lista_espera")
+        .upsert({ turma_id: turmaId, aluno_id: alunoId }, { onConflict: "turma_id,aluno_id", ignoreDuplicates: true });
+      revalidatePath(`/aulas/${turmaId}`);
+      return;
+    }
+  }
+
   await supabase
     .from("matriculas")
     .upsert({ turma_id: turmaId, aluno_id: alunoId, ativo: true }, { onConflict: "turma_id,aluno_id" });
+  await supabase.from("lista_espera").delete().eq("turma_id", turmaId).eq("aluno_id", alunoId);
 
   revalidatePath(`/aulas/${turmaId}`);
 }
@@ -45,6 +69,50 @@ export async function desmatricularAluno(turmaId: string, alunoId: string) {
     .update({ ativo: false })
     .eq("turma_id", turmaId)
     .eq("aluno_id", alunoId);
+
+  const { data: proximo } = await supabase
+    .from("lista_espera")
+    .select("id, aluno_id")
+    .eq("turma_id", turmaId)
+    .order("created_at", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  if (proximo) {
+    await supabase
+      .from("matriculas")
+      .upsert(
+        { turma_id: turmaId, aluno_id: proximo.aluno_id, ativo: true },
+        { onConflict: "turma_id,aluno_id" },
+      );
+    await supabase.from("lista_espera").delete().eq("id", proximo.id);
+  }
+
+  revalidatePath(`/aulas/${turmaId}`);
+}
+
+export async function promoverDaListaEspera(turmaId: string, alunoId: string) {
+  const supabase = await createClient();
+  await supabase
+    .from("matriculas")
+    .upsert({ turma_id: turmaId, aluno_id: alunoId, ativo: true }, { onConflict: "turma_id,aluno_id" });
+  await supabase.from("lista_espera").delete().eq("turma_id", turmaId).eq("aluno_id", alunoId);
+  revalidatePath(`/aulas/${turmaId}`);
+}
+
+export async function removerDaListaEspera(turmaId: string, alunoId: string) {
+  const supabase = await createClient();
+  await supabase.from("lista_espera").delete().eq("turma_id", turmaId).eq("aluno_id", alunoId);
+  revalidatePath(`/aulas/${turmaId}`);
+}
+
+export async function atualizarCapacidade(turmaId: string, formData: FormData) {
+  const raw = String(formData.get("capacidade_maxima") ?? "").trim();
+  const capacidade = raw ? Number(raw) : null;
+  if (capacidade !== null && (!Number.isFinite(capacidade) || capacidade <= 0)) return;
+
+  const supabase = await createClient();
+  await supabase.from("turmas").update({ capacidade_maxima: capacidade }).eq("id", turmaId);
   revalidatePath(`/aulas/${turmaId}`);
 }
 

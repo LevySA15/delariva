@@ -35,6 +35,20 @@ export async function getAlunosDaTurma(supabase: DB, turmaId: string) {
   return (data ?? []).map((d) => d.aluno).filter(Boolean) as { id: string; full_name: string }[];
 }
 
+export async function getListaEspera(supabase: DB, turmaId: string) {
+  const { data } = await supabase
+    .from("lista_espera")
+    .select("id, aluno_id, created_at, aluno:profiles!lista_espera_aluno_id_fkey(id, full_name)")
+    .eq("turma_id", turmaId)
+    .order("created_at", { ascending: true });
+  return (data ?? []).filter((d) => d.aluno) as {
+    id: string;
+    aluno_id: string;
+    created_at: string;
+    aluno: { id: string; full_name: string };
+  }[];
+}
+
 export async function listProfessores(supabase: DB) {
   // inclui "dono" porque o dono da academia pode acumular a função de professor
   const { data } = await supabase
