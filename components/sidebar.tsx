@@ -42,10 +42,12 @@ export function Sidebar({
   role,
   fullName,
   avatarUrl,
+  unreadTotal = 0,
 }: {
   role: UserRole;
   fullName: string;
   avatarUrl?: string | null;
+  unreadTotal?: number;
 }) {
   const pathname = usePathname();
   const modules = ROLE_MODULES[role];
@@ -81,6 +83,11 @@ export function Sidebar({
             >
               <Icon className="h-5 w-5 shrink-0" strokeWidth={2} />
               {MODULE_LABELS[mod]}
+              {mod === "chat" && unreadTotal > 0 && (
+                <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-500 px-1 text-xs font-bold text-white">
+                  {unreadTotal > 99 ? "99+" : unreadTotal}
+                </span>
+              )}
             </Link>
           );
         })}

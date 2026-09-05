@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { requireProfile } from "@/lib/supabase/current-user";
 import { createClient } from "@/lib/supabase/server";
-import { getConversaComOutroParticipante, getMensagensDiretas } from "@/lib/queries/chat";
+import { getConversaComOutroParticipante, getMensagensDiretas, marcarComoLido } from "@/lib/queries/chat";
 import { ChatRoom } from "@/components/chat-room";
 import { PageHeader } from "@/components/ui/page-header";
 import { Avatar } from "@/components/avatar";
@@ -19,6 +19,7 @@ export default async function ChatDiretoPage({
   if (!outro) notFound();
 
   const mensagens = await getMensagensDiretas(supabase, conversaId);
+  await marcarComoLido(supabase, profile.id, "direta", conversaId);
 
   return (
     <div>

@@ -2,7 +2,7 @@ import { MessageCircle, Users } from "lucide-react";
 import { requireProfile } from "@/lib/supabase/current-user";
 import { createClient } from "@/lib/supabase/server";
 import { listTurmas } from "@/lib/queries/turmas";
-import { listConversasDiretas, listContatosDisponiveis } from "@/lib/queries/chat";
+import { listConversasDiretas, listContatosDisponiveis, getUnreadCounts } from "@/lib/queries/chat";
 import { DIAS_SEMANA_LABELS } from "@/lib/domain";
 import { PageHeader } from "@/components/ui/page-header";
 import { CardLink } from "@/components/ui/card";
@@ -10,6 +10,15 @@ import { LinkButton } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Avatar } from "@/components/avatar";
 import { NovaConversa } from "./nova-conversa";
+
+function UnreadBadge({ count }: { count: number }) {
+  if (!count) return null;
+  return (
+    <span className="ml-auto flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-brand-500 px-1 text-xs font-bold text-white">
+      {count > 9 ? "9+" : count}
+    </span>
+  );
+}
 
 export default async function ChatPage() {
   const profile = await requireProfile();
@@ -19,6 +28,12 @@ export default async function ChatPage() {
     listConversasDiretas(supabase, profile.id),
     listContatosDisponiveis(supabase, profile),
   ]);
+  const naoLidas = await getUnreadCounts(
+    supabase,
+    profile.id,
+    turmas.map((t) => t.id),
+    conversas.map((c) => c.conversaId),
+  );
 
   return (
     <div className="space-y-8">
@@ -42,10 +57,11 @@ export default async function ChatPage() {
             {conversas.map((c) => (
               <CardLink key={c.conversaId} href={`/chat/dm/${c.conversaId}`} className="flex items-center gap-3 p-4">
                 <Avatar fullName={c.outro!.full_name} avatarUrl={c.outro!.avatar_url} size="sm" />
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <p className="truncate font-semibold text-ink-950">{c.outro!.full_name}</p>
                   <p className="truncate text-sm text-ink-900/50">{c.ultimaMensagem ?? "Sem mensagens ainda"}</p>
                 </div>
+                <UnreadBadge count={naoLidas.porConversaId[c.conversaId] ?? 0} />
               </CardLink>
             ))}
           </div>
@@ -61,11 +77,14 @@ export default async function ChatPage() {
         ) : (
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             {turmas.map((turma) => (
-              <CardLink key={turma.id} href={`/chat/${turma.id}`} className="p-4">
-                <p className="font-semibold text-ink-950">{turma.nome}</p>
-                <p className="mt-1 text-sm text-ink-900/50">
-                  {turma.dias_semana.map((d) => DIAS_SEMANA_LABELS[d]).join(", ")}
-                </p>
+              <CardLink key={turma.id} href={`/chat/${turma.id}`} className="flex items-center gap-3 p-4">
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold text-ink-950">{turma.nome}</p>
+                  <p className="mt-1 text-sm text-ink-900/50">
+                    {turma.dias_semana.map((d) => DIAS_SEMANA_LABELS[d]).join(", ")}
+                  </p>
+                </div>
+                <UnreadBadge count={naoLidas.porTurmaId[turma.id] ?? 0} />
               </CardLink>
             ))}
           </div>

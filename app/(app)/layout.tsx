@@ -1,12 +1,19 @@
 import { requireProfile } from "@/lib/supabase/current-user";
 import { createClient } from "@/lib/supabase/server";
-import { listConversasDiretas } from "@/lib/queries/chat";
+import { listConversasDiretas, getUnreadCounts } from "@/lib/queries/chat";
+import { listTurmas } from "@/lib/queries/turmas";
 import { AppShell } from "@/components/app-shell";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const profile = await requireProfile();
   const supabase = await createClient();
-  const conversas = await listConversasDiretas(supabase, profile.id);
+  const [conversas, turmas] = await Promise.all([listConversasDiretas(supabase, profile.id), listTurmas(supabase)]);
+  const naoLidas = await getUnreadCounts(
+    supabase,
+    profile.id,
+    turmas.map((t) => t.id),
+    conversas.map((c) => c.conversaId),
+  );
 
   return (
     <AppShell
@@ -15,6 +22,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       avatarUrl={profile.avatar_url}
       userId={profile.id}
       conversas={conversas}
+      naoLidas={naoLidas}
     >
       {children}
     </AppShell>

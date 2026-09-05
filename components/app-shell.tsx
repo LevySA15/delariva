@@ -5,7 +5,7 @@ import { Menu, X } from "lucide-react";
 import { Sidebar } from "./sidebar";
 import { ChatBubble } from "./chat-bubble";
 import type { UserRole } from "@/lib/domain";
-import type { listConversasDiretas } from "@/lib/queries/chat";
+import type { listConversasDiretas, getUnreadCounts } from "@/lib/queries/chat";
 
 export function AppShell({
   role,
@@ -13,6 +13,7 @@ export function AppShell({
   avatarUrl,
   userId,
   conversas,
+  naoLidas,
   children,
 }: {
   role: UserRole;
@@ -20,6 +21,7 @@ export function AppShell({
   avatarUrl?: string | null;
   userId: string;
   conversas: Awaited<ReturnType<typeof listConversasDiretas>>;
+  naoLidas: Awaited<ReturnType<typeof getUnreadCounts>>;
   children: React.ReactNode;
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -28,7 +30,7 @@ export function AppShell({
     <div className="flex h-screen overflow-hidden bg-surface">
       {/* sidebar desktop */}
       <div className="hidden md:block">
-        <Sidebar role={role} fullName={fullName} avatarUrl={avatarUrl} />
+        <Sidebar role={role} fullName={fullName} avatarUrl={avatarUrl} unreadTotal={naoLidas.total} />
       </div>
 
       {/* sidebar mobile (drawer) */}
@@ -36,7 +38,7 @@ export function AppShell({
         <div className="fixed inset-0 z-40 md:hidden">
           <div className="absolute inset-0 bg-black/60" onClick={() => setMobileOpen(false)} />
           <div className="relative z-50 h-full">
-            <Sidebar role={role} fullName={fullName} avatarUrl={avatarUrl} />
+            <Sidebar role={role} fullName={fullName} avatarUrl={avatarUrl} unreadTotal={naoLidas.total} />
             <button
               aria-label="Fechar menu"
               onClick={() => setMobileOpen(false)}
@@ -66,7 +68,7 @@ export function AppShell({
         </main>
       </div>
 
-      <ChatBubble currentUserId={userId} conversas={conversas} />
+      <ChatBubble currentUserId={userId} conversas={conversas} unreadPorConversa={naoLidas.porConversaId} />
     </div>
   );
 }

@@ -139,3 +139,69 @@ export async function listContatosDisponiveis(
   const unicos = new Map(todos.map((p) => [p.id, p]));
   return Array.from(unicos.values()).sort((a, b) => a.full_name.localeCompare(b.full_name));
 }
+
+// =========================================================
+// Não lidas
+// =========================================================
+
+// Contagem de mensagens de outras pessoas criadas depois da última
+// leitura registrada (ou desde sempre, se a conversa/turma nunca foi
+// aberta por esse usuário).
+export async function getUnreadCounts(supabase: DB, userId: string, turmaIds: string[], conversaIds: string[]) {
+  const { data: leituras } = await supabase
+    .from("chat_leituras")
+    .select("contexto_tipo, contexto_id, last_read_at")
+    .eq("usuario_id", userId);
+
+  const lastRead = new Map((leituras ?? []).map((l) => [`${l.contexto_tipo}:${l.contexto_id}`, l.last_read_at]));
+
+  const porTurmaId: Record<string, number> = {};
+  const porConversaId: Record<string, number> = {};
+
+  if (turmaIds.length > 0) {
+    const { data: msgs } = await supabase
+      .from("chat_turma_mensagens")
+      .select("turma_id, created_at")
+      .in("turma_id", turmaIds)
+      .neq("autor_id", userId);
+    for (const m of msgs ?? []) {
+      const desde = lastRead.get(`turma:${m.turma_id}`);
+      if (!desde || new Date(m.created_at) > new Date(desde)) {
+        porTurmaId[m.turma_id] = (porTurmaId[m.turma_id] ?? 0) + 1;
+      }
+    }
+  }
+
+  if (conversaIds.length > 0) {
+    const { data: msgs } = await supabase
+      .from("mensagens_diretas")
+      .select("conversa_id, created_at")
+      .in("conversa_id", conversaIds)
+      .neq("autor_id", userId);
+    for (const m of msgs ?? []) {
+      const desde = lastRead.get(`direta:${m.conversa_id}`);
+      if (!desde || new Date(m.created_at) > new Date(desde)) {
+        porConversaId[m.conversa_id] = (porConversaId[m.conversa_id] ?? 0) + 1;
+      }
+    }
+  }
+
+  const total =
+    Object.values(porTurmaId).reduce((a, b) => a + b, 0) + Object.values(porConversaId).reduce((a, b) => a + b, 0);
+
+  return { total, porTurmaId, porConversaId };
+}
+
+export async function marcarComoLido(
+  supabase: DB,
+  userId: string,
+  contextoTipo: "turma" | "direta",
+  contextoId: string,
+) {
+  await supabase
+    .from("chat_leituras")
+    .upsert(
+      { usuario_id: userId, contexto_tipo: contextoTipo, contexto_id: contextoId, last_read_at: new Date().toISOString() },
+      { onConflict: "usuario_id,contexto_tipo,contexto_id" },
+    );
+}
