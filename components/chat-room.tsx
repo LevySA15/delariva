@@ -20,11 +20,13 @@ export function ChatRoom({
   currentUserId,
   nomesPorId,
   initialMessages,
+  compact = false,
 }: {
   config: ChatConfig;
   currentUserId: string;
   nomesPorId: Record<string, string>;
   initialMessages: Mensagem[];
+  compact?: boolean;
 }) {
   const [mensagens, setMensagens] = useState<Mensagem[]>(initialMessages);
   const [texto, setTexto] = useState("");
@@ -71,7 +73,13 @@ export function ChatRoom({
   }
 
   return (
-    <div className="flex h-[70vh] flex-col rounded-lg border border-ink-900/10 bg-white shadow-sm">
+    <div
+      className={
+        compact
+          ? "flex h-full flex-col bg-white"
+          : "flex h-[70vh] flex-col rounded-lg border border-ink-900/10 bg-white shadow-sm"
+      }
+    >
       <div className="flex-1 space-y-3 overflow-y-auto p-4">
         {mensagens.length === 0 && (
           <p className="text-sm text-ink-900/40">Nenhuma mensagem ainda. Diga oi!</p>

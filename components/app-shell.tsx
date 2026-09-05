@@ -3,17 +3,23 @@
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { Sidebar } from "./sidebar";
+import { ChatBubble } from "./chat-bubble";
 import type { UserRole } from "@/lib/domain";
+import type { listConversasDiretas } from "@/lib/queries/chat";
 
 export function AppShell({
   role,
   fullName,
   avatarUrl,
+  userId,
+  conversas,
   children,
 }: {
   role: UserRole;
   fullName: string;
   avatarUrl?: string | null;
+  userId: string;
+  conversas: Awaited<ReturnType<typeof listConversasDiretas>>;
   children: React.ReactNode;
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -59,6 +65,8 @@ export function AppShell({
           <div className="mx-auto max-w-6xl">{children}</div>
         </main>
       </div>
+
+      <ChatBubble currentUserId={userId} conversas={conversas} />
     </div>
   );
 }
