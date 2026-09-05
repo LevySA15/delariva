@@ -32,7 +32,7 @@ export default async function ChatTurmaPage({
     <div>
       <PageHeader title={turma.nome} />
       <ChatRoom
-        turmaId={turmaId}
+        config={{ tabela: "chat_turma_mensagens", coluna: "turma_id", contextoId: turmaId }}
         currentUserId={profile.id}
         nomesPorId={nomesPorId}
         initialMessages={mensagens.map((m) => ({

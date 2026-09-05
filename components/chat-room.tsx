@@ -11,13 +11,17 @@ type Mensagem = {
   autor_id: string;
 };
 
+type ChatConfig =
+  | { tabela: "chat_turma_mensagens"; coluna: "turma_id"; contextoId: string }
+  | { tabela: "mensagens_diretas"; coluna: "conversa_id"; contextoId: string };
+
 export function ChatRoom({
-  turmaId,
+  config,
   currentUserId,
   nomesPorId,
   initialMessages,
 }: {
-  turmaId: string;
+  config: ChatConfig;
   currentUserId: string;
   nomesPorId: Record<string, string>;
   initialMessages: Mensagem[];
@@ -30,12 +34,12 @@ export function ChatRoom({
   useEffect(() => {
     const supabase = createClient();
     const channel = supabase
-      .channel(`chat-turma-${turmaId}`)
+      .channel(`${config.tabela}-${config.contextoId}`)
       .on(
         "postgres_changes",
-        { event: "INSERT", schema: "public", table: "chat_turma_mensagens", filter: `turma_id=eq.${turmaId}` },
+        { event: "INSERT", schema: "public", table: config.tabela, filter: `${config.coluna}=eq.${config.contextoId}` },
         (payload) => {
-          const nova = payload.new as Mensagem & { turma_id: string };
+          const nova = payload.new as Mensagem;
           setMensagens((prev) => (prev.some((m) => m.id === nova.id) ? prev : [...prev, nova]));
         },
       )
@@ -44,7 +48,7 @@ export function ChatRoom({
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [turmaId]);
+  }, [config.tabela, config.coluna, config.contextoId]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -58,11 +62,11 @@ export function ChatRoom({
     setEnviando(true);
     setTexto("");
     const supabase = createClient();
-    await supabase.from("chat_turma_mensagens").insert({
-      turma_id: turmaId,
+    await supabase.from(config.tabela).insert({
+      [config.coluna]: config.contextoId,
       autor_id: currentUserId,
       mensagem: conteudo,
-    });
+    } as never);
     setEnviando(false);
   }
 

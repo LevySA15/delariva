@@ -411,9 +411,89 @@ export interface Database {
           },
         ];
       };
+      conversas_diretas: {
+        Row: {
+          id: string;
+          participante_a: string;
+          participante_b: string;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["conversas_diretas"]["Row"]> & {
+          participante_a: string;
+          participante_b: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["conversas_diretas"]["Row"]>;
+        Relationships: [
+          {
+            foreignKeyName: "conversas_diretas_participante_a_fkey";
+            columns: ["participante_a"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "conversas_diretas_participante_b_fkey";
+            columns: ["participante_b"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      mensagens_diretas: {
+        Row: {
+          id: string;
+          conversa_id: string;
+          autor_id: string;
+          mensagem: string;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["mensagens_diretas"]["Row"]> & {
+          conversa_id: string;
+          autor_id: string;
+          mensagem: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["mensagens_diretas"]["Row"]>;
+        Relationships: [
+          {
+            foreignKeyName: "mensagens_diretas_conversa_id_fkey";
+            columns: ["conversa_id"];
+            isOneToOne: false;
+            referencedRelation: "conversas_diretas";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "mensagens_diretas_autor_id_fkey";
+            columns: ["autor_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      chat_leituras: {
+        Row: {
+          usuario_id: string;
+          contexto_tipo: "turma" | "direta";
+          contexto_id: string;
+          last_read_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["chat_leituras"]["Row"]> & {
+          usuario_id: string;
+          contexto_tipo: "turma" | "direta";
+          contexto_id: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["chat_leituras"]["Row"]>;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      staff_directory: {
+        Args: Record<string, never>;
+        Returns: { id: string; full_name: string; role: UserRole }[];
+      };
+    };
     Enums: {
       user_role: UserRole;
       faixa_categoria: FaixaCategoria;
