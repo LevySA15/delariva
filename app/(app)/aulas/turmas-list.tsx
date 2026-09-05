@@ -1,13 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Clock, Swords } from "lucide-react";
+import { CalendarDays, Clock, List, Swords } from "lucide-react";
 import { CardLink } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { SearchInput } from "@/components/ui/search-input";
 import { inputClass } from "@/components/ui/field";
 import { DIAS_SEMANA_LABELS, type FaixaCategoria } from "@/lib/domain";
+import { TurmasCalendar } from "./turmas-calendar";
 
 type Turma = {
   id: string;
@@ -21,6 +22,7 @@ type Turma = {
 export function TurmasList({ turmas }: { turmas: Turma[] }) {
   const [busca, setBusca] = useState("");
   const [categoria, setCategoria] = useState<FaixaCategoria | "todas">("todas");
+  const [visao, setVisao] = useState<"lista" | "calendario">("lista");
 
   const filtradas = useMemo(() => {
     const termo = busca.trim().toLowerCase();
@@ -37,7 +39,7 @@ export function TurmasList({ turmas }: { turmas: Turma[] }) {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <SearchInput value={busca} onChange={setBusca} placeholder="Buscar turma..." className="max-w-xs flex-1" />
         <select
           value={categoria}
@@ -48,10 +50,34 @@ export function TurmasList({ turmas }: { turmas: Turma[] }) {
           <option value="adulto">Adulto</option>
           <option value="infantil">Infantil</option>
         </select>
+        <div className="flex overflow-hidden rounded-md border border-ink-900/15">
+          <button
+            type="button"
+            onClick={() => setVisao("lista")}
+            className={`flex items-center gap-1.5 px-3 py-2 text-sm font-medium transition ${
+              visao === "lista" ? "bg-ink-950 text-white" : "bg-white text-ink-900/60 hover:bg-ink-950/[0.04]"
+            }`}
+          >
+            <List className="h-4 w-4" />
+            Lista
+          </button>
+          <button
+            type="button"
+            onClick={() => setVisao("calendario")}
+            className={`flex items-center gap-1.5 border-l border-ink-900/15 px-3 py-2 text-sm font-medium transition ${
+              visao === "calendario" ? "bg-ink-950 text-white" : "bg-white text-ink-900/60 hover:bg-ink-950/[0.04]"
+            }`}
+          >
+            <CalendarDays className="h-4 w-4" />
+            Calendário
+          </button>
+        </div>
       </div>
 
       {filtradas.length === 0 ? (
         <EmptyState icon={Swords} message="Nenhuma turma bate com esse filtro." />
+      ) : visao === "calendario" ? (
+        <TurmasCalendar turmas={filtradas} />
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {filtradas.map((turma) => (
