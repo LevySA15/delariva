@@ -5,6 +5,7 @@ import { getFaixaAtual } from "@/lib/queries/dashboard";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card } from "@/components/ui/card";
 import { PerfilForm } from "./perfil-form";
+import { AvatarUpload } from "./avatar-upload";
 
 export default async function PerfilPage({
   searchParams,
@@ -22,6 +23,9 @@ export default async function PerfilPage({
   return (
     <div>
       <PageHeader title="Meu perfil" />
+      <div className="mb-6">
+        <AvatarUpload userId={profile.id} fullName={profile.full_name} avatarUrl={profile.avatar_url} />
+      </div>
       <PerfilForm
         fullName={profile.full_name}
         phone={profile.phone}

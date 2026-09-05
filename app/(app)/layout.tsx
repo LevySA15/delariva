@@ -5,7 +5,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const profile = await requireProfile();
 
   return (
-    <AppShell role={profile.role} fullName={profile.full_name}>
+    <AppShell role={profile.role} fullName={profile.full_name} avatarUrl={profile.avatar_url}>
       {children}
     </AppShell>
   );

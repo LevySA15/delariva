@@ -14,6 +14,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { logout } from "@/lib/supabase/actions";
+import { Avatar } from "@/components/avatar";
 import { MODULE_LABELS, ROLE_LABELS, ROLE_MODULES, type ModuleKey, type UserRole } from "@/lib/domain";
 
 const MODULE_HREFS: Record<ModuleKey, string> = {
@@ -36,12 +37,15 @@ const MODULE_ICONS: Record<ModuleKey, LucideIcon> = {
   configuracoes: Settings,
 };
 
-function initials(name: string) {
-  const parts = name.trim().split(/\s+/);
-  return ((parts[0]?.[0] ?? "") + (parts[1]?.[0] ?? "")).toUpperCase();
-}
-
-export function Sidebar({ role, fullName }: { role: UserRole; fullName: string }) {
+export function Sidebar({
+  role,
+  fullName,
+  avatarUrl,
+}: {
+  role: UserRole;
+  fullName: string;
+  avatarUrl?: string | null;
+}) {
   const pathname = usePathname();
   const modules = ROLE_MODULES[role];
 
@@ -79,9 +83,7 @@ export function Sidebar({ role, fullName }: { role: UserRole; fullName: string }
 
       <div className="border-t border-white/10 p-4">
         <div className="mb-3 flex items-center gap-3">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-600 text-xs font-bold text-white">
-            {initials(fullName)}
-          </span>
+          <Avatar fullName={fullName} avatarUrl={avatarUrl} size="sm" />
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold text-white">{fullName}</p>
             <p className="text-xs text-white/40">{ROLE_LABELS[role]}</p>

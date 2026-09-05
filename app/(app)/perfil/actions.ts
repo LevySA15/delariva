@@ -37,3 +37,20 @@ export async function updateOwnProfile(
   revalidatePath("/perfil");
   return { error: null, success: true };
 }
+
+export async function updateAvatarUrl(url: string): Promise<{ error: string | null }> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "Sessão expirada. Faça login novamente." };
+  }
+
+  const { error } = await supabase.from("profiles").update({ avatar_url: url }).eq("id", user.id);
+  if (error) return { error: error.message };
+
+  revalidatePath("/", "layout");
+  return { error: null };
+}

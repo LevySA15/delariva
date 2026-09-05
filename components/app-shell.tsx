@@ -8,10 +8,12 @@ import type { UserRole } from "@/lib/domain";
 export function AppShell({
   role,
   fullName,
+  avatarUrl,
   children,
 }: {
   role: UserRole;
   fullName: string;
+  avatarUrl?: string | null;
   children: React.ReactNode;
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -20,7 +22,7 @@ export function AppShell({
     <div className="flex h-screen overflow-hidden bg-surface">
       {/* sidebar desktop */}
       <div className="hidden md:block">
-        <Sidebar role={role} fullName={fullName} />
+        <Sidebar role={role} fullName={fullName} avatarUrl={avatarUrl} />
       </div>
 
       {/* sidebar mobile (drawer) */}
@@ -28,7 +30,7 @@ export function AppShell({
         <div className="fixed inset-0 z-40 md:hidden">
           <div className="absolute inset-0 bg-black/60" onClick={() => setMobileOpen(false)} />
           <div className="relative z-50 h-full">
-            <Sidebar role={role} fullName={fullName} />
+            <Sidebar role={role} fullName={fullName} avatarUrl={avatarUrl} />
             <button
               aria-label="Fechar menu"
               onClick={() => setMobileOpen(false)}
