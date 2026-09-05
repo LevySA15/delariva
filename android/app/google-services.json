@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "774196279412",
+    "project_id": "delarivasaj",
+    "storage_bucket": "delarivasaj.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:774196279412:android:abff64b522b5addde57921",
+        "android_client_info": {
+          "package_name": "br.com.delariva.saj"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAfE36hsD3YsPfFCYVXI-ecF0nGjnP-44s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
