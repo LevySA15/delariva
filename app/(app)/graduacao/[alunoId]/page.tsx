@@ -10,6 +10,7 @@ import { FaixaBadge } from "@/components/ui/faixa-badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { GraduacaoForm } from "./graduacao-form";
 import { AvaliacaoForm } from "./avaliacao-form";
+import { GraduacaoTimeline } from "./graduacao-timeline";
 
 export default async function GraduacaoAlunoPage({
   params,
@@ -56,20 +57,9 @@ export default async function GraduacaoAlunoPage({
         {graduacoes.length === 0 ? (
           <EmptyState message="Nenhuma graduação registrada ainda." />
         ) : (
-          <div className="space-y-2">
-            {graduacoes.map((g) => (
-              <Card key={g.id} className="p-4">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <FaixaBadge faixa={g.faixa} grau={g.grau} />
-                  <p className="text-sm text-ink-900/50">
-                    {new Date(g.data + "T00:00:00").toLocaleDateString("pt-BR")}
-                  </p>
-                </div>
-                {g.observacao && <p className="mt-2 text-sm text-ink-900/70">{g.observacao}</p>}
-                {g.professor && <p className="mt-1 text-xs text-ink-900/40">por {g.professor.full_name}</p>}
-              </Card>
-            ))}
-          </div>
+          <Card className="p-5">
+            <GraduacaoTimeline graduacoes={graduacoes} />
+          </Card>
         )}
       </section>
 
