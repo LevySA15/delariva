@@ -110,3 +110,14 @@ export function labelTempoTreino(meses: number): string {
   const anos = meses / 12;
   return `${anos} ${anos === 1 ? "ano" : "anos"} de treino`;
 }
+
+// =========================================================
+// Notificações
+// =========================================================
+export const TIPO_NOTIFICACAO_LABELS: Record<string, string> = {
+  mensalidade: "Mensalidade",
+  mensagem: "Mensagem",
+  mural: "Mural",
+  aula: "Lembrete de aula",
+  personalizada: "Personalizada",
+};

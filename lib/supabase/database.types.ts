@@ -333,6 +333,7 @@ export interface Database {
           status: StatusMensalidade;
           data_pagamento: string | null;
           forma_pagamento: string | null;
+          data_vencimento: string | null;
           created_at: string;
         };
         Insert: Partial<Database["public"]["Tables"]["mensalidades"]["Row"]> & {
@@ -511,6 +512,56 @@ export interface Database {
           {
             foreignKeyName: "lista_espera_aluno_id_fkey";
             columns: ["aluno_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      push_tokens: {
+        Row: {
+          id: string;
+          user_id: string;
+          token: string;
+          plataforma: string;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["push_tokens"]["Row"]> & {
+          user_id: string;
+          token: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["push_tokens"]["Row"]>;
+        Relationships: [
+          {
+            foreignKeyName: "push_tokens_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      notificacoes_enviadas: {
+        Row: {
+          id: string;
+          autor_id: string | null;
+          tipo: string;
+          titulo: string;
+          corpo: string;
+          destinatarios_count: number;
+          destinatarios: string[];
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["notificacoes_enviadas"]["Row"]> & {
+          tipo: string;
+          titulo: string;
+          corpo: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["notificacoes_enviadas"]["Row"]>;
+        Relationships: [
+          {
+            foreignKeyName: "notificacoes_enviadas_autor_id_fkey";
+            columns: ["autor_id"];
             isOneToOne: false;
             referencedRelation: "profiles";
             referencedColumns: ["id"];

@@ -29,22 +29,30 @@ export async function lancarMensalidade(_prevState: FormState, formData: FormDat
   const planoId = String(formData.get("plano_id") ?? "") || null;
   const mesReferencia = String(formData.get("mes_referencia") ?? "");
   const valor = Number(formData.get("valor") ?? 0);
+  const dataVencimentoRaw = String(formData.get("data_vencimento") ?? "").trim();
 
   if (!alunoId || !mesReferencia || valor <= 0) {
     return { error: "Preencha aluno, mês e valor." };
   }
 
+  const dataVencimento = dataVencimentoRaw || diaDezDoMes(mesReferencia);
+
   const supabase = await createClient();
   const { error } = await supabase
     .from("mensalidades")
     .upsert(
-      { aluno_id: alunoId, plano_id: planoId, mes_referencia: mesReferencia, valor },
+      { aluno_id: alunoId, plano_id: planoId, mes_referencia: mesReferencia, valor, data_vencimento: dataVencimento },
       { onConflict: "aluno_id,mes_referencia" },
     );
 
   if (error) return { error: error.message };
 
   redirect(`/financeiro/${alunoId}`);
+}
+
+function diaDezDoMes(mesReferencia: string): string {
+  const [ano, mes] = mesReferencia.split("-").map(Number);
+  return `${ano}-${String(mes).padStart(2, "0")}-10`;
 }
 
 export async function marcarPago(mensalidadeId: string, alunoId: string, formData: FormData) {

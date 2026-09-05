@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Menu, X } from "lucide-react";
 import { Sidebar } from "./sidebar";
 import { ChatBubble } from "./chat-bubble";
+import { PushRegistration } from "./push-registration";
 import type { UserRole } from "@/lib/domain";
 import type { listConversasDiretas, getUnreadCounts } from "@/lib/queries/chat";
 
@@ -70,6 +71,7 @@ export function AppShell({
       </div>
 
       <ChatBubble currentUserId={userId} conversas={conversas} unreadPorConversa={naoLidas.porConversaId} />
+      <PushRegistration />
     </div>
   );
 }
