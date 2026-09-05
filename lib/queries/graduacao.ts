@@ -13,6 +13,17 @@ export async function getGraduacoes(supabase: DB, alunoId: string) {
   return data ?? [];
 }
 
+export async function getGraduacaoDetalhada(supabase: DB, graduacaoId: string) {
+  const { data } = await supabase
+    .from("graduacoes")
+    .select(
+      "*, aluno:profiles!graduacoes_aluno_id_fkey(full_name), professor:profiles!graduacoes_professor_id_fkey(full_name)",
+    )
+    .eq("id", graduacaoId)
+    .single();
+  return data;
+}
+
 export async function getAvaliacoes(supabase: DB, alunoId: string) {
   const { data } = await supabase
     .from("avaliacoes")

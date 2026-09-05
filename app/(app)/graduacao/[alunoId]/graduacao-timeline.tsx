@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { Award } from "lucide-react";
 import { FAIXA_COR_HEX } from "@/lib/domain";
 
 type Graduacao = {
@@ -32,7 +34,17 @@ export function GraduacaoTimeline({ graduacoes }: { graduacoes: Graduacao[] }) {
               </p>
             </div>
             {g.observacao && <p className="mt-1 text-sm text-ink-900/70">{g.observacao}</p>}
-            {g.professor && <p className="mt-1 text-xs text-ink-900/40">por {g.professor.full_name}</p>}
+            <div className="mt-1.5 flex items-center gap-3">
+              {g.professor && <p className="text-xs text-ink-900/40">por {g.professor.full_name}</p>}
+              <Link
+                href={`/certificado/${g.id}`}
+                target="_blank"
+                className="flex items-center gap-1 text-xs font-medium text-brand-600 hover:underline"
+              >
+                <Award className="h-3 w-3" />
+                Certificado
+              </Link>
+            </div>
           </div>
         ))}
       </div>
