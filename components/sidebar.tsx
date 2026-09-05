@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { logout } from "@/lib/supabase/actions";
 import { Avatar } from "@/components/avatar";
+import { GlobalSearch } from "@/components/global-search";
 import { MODULE_LABELS, ROLE_LABELS, ROLE_MODULES, type ModuleKey, type UserRole } from "@/lib/domain";
 
 const MODULE_HREFS: Record<ModuleKey, string> = {
@@ -57,6 +58,10 @@ export function Sidebar({
           <p className="font-display text-lg font-semibold uppercase tracking-wider text-white">DELARIVA</p>
           <p className="text-[11px] uppercase tracking-wide text-white/40">Sistema Acadêmico</p>
         </div>
+      </div>
+
+      <div className="px-3 pt-3">
+        <GlobalSearch />
       </div>
 
       <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
