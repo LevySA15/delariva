@@ -2,13 +2,15 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { Wallet } from "lucide-react";
+import { Wallet, Download } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { SearchInput } from "@/components/ui/search-input";
 import { StatusMensalidadeBadge } from "@/components/ui/status-badge";
+import { Button } from "@/components/ui/button";
 import { inputClass } from "@/components/ui/field";
 import { STATUS_MENSALIDADE_LABELS } from "@/lib/domain";
+import { baixarCsv } from "@/lib/csv";
 import type { listMensalidadesDoMes } from "@/lib/queries/financeiro";
 import type { StatusMensalidade } from "@/lib/supabase/database.types";
 
@@ -27,13 +29,29 @@ export function MensalidadesList({ mensalidades }: { mensalidades: Mensalidade[]
     });
   }, [mensalidades, busca, status]);
 
+  function exportarCsv() {
+    baixarCsv(
+      `mensalidades-${new Date().toISOString().slice(0, 10)}.csv`,
+      ["Aluno", "Plano", "Mês de referência", "Valor", "Status", "Data de pagamento", "Forma de pagamento"],
+      filtradas.map((m) => [
+        m.aluno?.full_name ?? "",
+        m.plano?.nome ?? "",
+        m.mes_referencia,
+        Number(m.valor).toFixed(2),
+        STATUS_MENSALIDADE_LABELS[m.status],
+        m.data_pagamento ?? "",
+        m.forma_pagamento ?? "",
+      ]),
+    );
+  }
+
   if (mensalidades.length === 0) {
     return <EmptyState icon={Wallet} message="Nenhuma mensalidade lançada para este mês ainda." />;
   }
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <SearchInput value={busca} onChange={setBusca} placeholder="Buscar aluno..." className="max-w-xs flex-1" />
         <select
           value={status}
@@ -47,6 +65,10 @@ export function MensalidadesList({ mensalidades }: { mensalidades: Mensalidade[]
             </option>
           ))}
         </select>
+        <Button type="button" variant="secondary" size="sm" onClick={exportarCsv} className="ml-auto">
+          <Download className="h-4 w-4" />
+          Exportar CSV
+        </Button>
       </div>
 
       {filtradas.length === 0 ? (
