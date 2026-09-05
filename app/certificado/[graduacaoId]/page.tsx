@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { requireProfile } from "@/lib/supabase/current-user";
 import { createClient } from "@/lib/supabase/server";
@@ -29,8 +30,14 @@ export default async function CertificadoPage({
       <div className="aspect-[1.414/1] w-full max-w-3xl border-8 border-double border-brand-600 bg-white p-10 shadow-2xl print:w-[100vw] print:max-w-none print:border-4 print:shadow-none">
         <div className="flex h-full flex-col items-center justify-between text-center">
           <div>
-            <span className="mx-auto mb-2 block h-2 w-16 rounded-sm bg-brand-600" aria-hidden />
-            <p className="font-display text-2xl font-bold uppercase tracking-widest text-ink-950">DELARIVA</p>
+            <Image
+              src="/logo/wordmark.png"
+              alt="DELARIVA"
+              width={240}
+              height={70}
+              className="mx-auto mb-2 h-10 w-auto"
+              priority
+            />
             <p className="text-xs uppercase tracking-[0.25em] text-ink-900/40">Sistema Acadêmico Jiu-Jitsu</p>
           </div>
 

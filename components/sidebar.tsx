@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   LayoutGrid,
@@ -54,8 +55,8 @@ export function Sidebar({
 
   return (
     <aside className="flex h-full w-64 shrink-0 flex-col bg-ink-950">
-      <div className="flex items-center gap-2 border-b border-white/10 px-5 py-5">
-        <span className="h-2 w-6 rounded-sm bg-brand-600" aria-hidden />
+      <div className="flex items-center gap-3 border-b border-white/10 px-5 py-4">
+        <Image src="/logo/badge.png" alt="DELARIVA" width={40} height={40} className="h-10 w-10" />
         <div>
           <p className="font-display text-lg font-semibold uppercase tracking-wider text-white">DELARIVA</p>
           <p className="text-[11px] uppercase tracking-wide text-white/40">Sistema Acadêmico</p>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { Menu, X } from "lucide-react";
 import { Sidebar } from "./sidebar";
 import { ChatBubble } from "./chat-bubble";
@@ -59,7 +60,7 @@ export function AppShell({
           >
             <Menu className="h-5 w-5" />
           </button>
-          <span className="h-2 w-5 rounded-sm bg-brand-600" aria-hidden />
+          <Image src="/logo/badge.png" alt="DELARIVA" width={28} height={28} className="h-7 w-7" />
           <span className="font-display font-semibold uppercase tracking-wider text-white">DELARIVA</span>
         </header>
 
