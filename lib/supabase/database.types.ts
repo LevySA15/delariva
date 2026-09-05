@@ -528,6 +528,10 @@ export interface Database {
         Args: { p_turma_id?: string | null; p_desde?: string | null };
         Returns: { aluno_id: string; full_name: string; total_presencas: number }[];
       };
+      checkin_qr: {
+        Args: { p_turma_id: string };
+        Returns: { aula_id: string; ja_estava_presente: boolean }[];
+      };
     };
     Enums: {
       user_role: UserRole;

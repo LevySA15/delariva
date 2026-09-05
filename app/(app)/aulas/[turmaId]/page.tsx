@@ -1,5 +1,6 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
-import { X, Clock, CalendarCheck, ClipboardList, Hourglass } from "lucide-react";
+import { X, Clock, CalendarCheck, ClipboardList, Hourglass, QrCode } from "lucide-react";
 import { requireProfile } from "@/lib/supabase/current-user";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -184,9 +185,19 @@ export default async function TurmaDetailPage({
 
       {podeFazerCheckin && (
         <section>
-          <h2 className="mb-3 flex items-center gap-2 font-display text-sm font-semibold uppercase tracking-wide text-ink-900/60">
-            <CalendarCheck className="h-4 w-4 text-brand-600" />
-            Chamada de hoje ({todayISO()})
+          <h2 className="mb-3 flex items-center justify-between gap-2 font-display text-sm font-semibold uppercase tracking-wide text-ink-900/60">
+            <span className="flex items-center gap-2">
+              <CalendarCheck className="h-4 w-4 text-brand-600" />
+              Chamada de hoje ({todayISO()})
+            </span>
+            <Link
+              href={`/aulas/${turmaId}/qrcode`}
+              target="_blank"
+              className="flex items-center gap-1 text-xs font-medium normal-case tracking-normal text-brand-600 hover:underline"
+            >
+              <QrCode className="h-3.5 w-3.5" />
+              QR code de check-in
+            </Link>
           </h2>
           <CheckinForm supabase={supabase} turmaId={turmaId} alunos={alunos} />
         </section>
