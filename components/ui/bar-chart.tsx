@@ -2,15 +2,21 @@
 
 import { useState } from "react";
 
+const FORMATTERS = {
+  numero: (v: number) => String(v),
+  moeda: (v: number) => `R$ ${v.toFixed(0)}`,
+} as const;
+
 export function BarChart({
   data,
-  formatValue = (n) => String(n),
+  format = "numero",
   height = 180,
 }: {
   data: { label: string; value: number }[];
-  formatValue?: (value: number) => string;
+  format?: keyof typeof FORMATTERS;
   height?: number;
 }) {
+  const formatValue = FORMATTERS[format];
   const [hover, setHover] = useState<number | null>(null);
   const max = Math.max(1, ...data.map((d) => d.value));
 

@@ -73,7 +73,7 @@ async function DonoStats() {
         <p className="mb-4 font-display text-sm font-semibold uppercase tracking-wide text-ink-900/60">
           Receita paga · últimos 6 meses
         </p>
-        <BarChart data={receita} formatValue={(v) => `R$ ${v.toFixed(0)}`} />
+        <BarChart data={receita} format="moeda" />
       </Card>
     </div>
   );
