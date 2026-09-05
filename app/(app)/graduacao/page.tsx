@@ -4,6 +4,8 @@ import { createClient } from "@/lib/supabase/server";
 import { getDependentes } from "@/lib/queries/dashboard";
 import { listAlunosDoProfessor, listTodosAlunos } from "@/lib/queries/graduacao";
 import { PageHeader } from "@/components/ui/page-header";
+import { LinkButton } from "@/components/ui/button";
+import { Trophy } from "lucide-react";
 import { AlunosList } from "./alunos-list";
 
 export default async function GraduacaoIndexPage() {
@@ -31,7 +33,15 @@ export default async function GraduacaoIndexPage() {
 
   return (
     <div>
-      <PageHeader title="Graduação" />
+      <PageHeader
+        title="Graduação"
+        action={
+          <LinkButton href="/graduacao/ranking" variant="secondary" size="sm">
+            <Trophy className="h-4 w-4" />
+            Ranking de frequência
+          </LinkButton>
+        }
+      />
       <AlunosList alunos={alunos} />
     </div>
   );

@@ -494,6 +494,10 @@ export interface Database {
         Args: Record<string, never>;
         Returns: { id: string; full_name: string; role: UserRole }[];
       };
+      ranking_frequencia: {
+        Args: { p_turma_id?: string | null; p_desde?: string | null };
+        Returns: { aluno_id: string; full_name: string; total_presencas: number }[];
+      };
     };
     Enums: {
       user_role: UserRole;

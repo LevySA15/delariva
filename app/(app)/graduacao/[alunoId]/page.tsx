@@ -1,7 +1,10 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Trophy } from "lucide-react";
 import { requireProfile } from "@/lib/supabase/current-user";
 import { createClient } from "@/lib/supabase/server";
 import { getAvaliacoes, getGraduacoes } from "@/lib/queries/graduacao";
+import { getConquistasAluno } from "@/lib/queries/frequencia";
 import { CRITERIO_LABELS } from "@/lib/domain";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card } from "@/components/ui/card";
@@ -11,6 +14,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { GraduacaoForm } from "./graduacao-form";
 import { AvaliacaoForm } from "./avaliacao-form";
 import { GraduacaoTimeline } from "./graduacao-timeline";
+import { ConquistasGrid } from "./conquistas-grid";
 
 export default async function GraduacaoAlunoPage({
   params,
@@ -24,9 +28,10 @@ export default async function GraduacaoAlunoPage({
   const { data: aluno } = await supabase.from("profiles").select("*").eq("id", alunoId).single();
   if (!aluno) notFound();
 
-  const [graduacoes, avaliacoes] = await Promise.all([
+  const [graduacoes, avaliacoes, conquistas] = await Promise.all([
     getGraduacoes(supabase, alunoId),
     getAvaliacoes(supabase, alunoId),
+    getConquistasAluno(supabase, alunoId),
   ]);
 
   const faixaAtual = graduacoes[0];
@@ -37,8 +42,28 @@ export default async function GraduacaoAlunoPage({
       <PageHeader
         title={aluno.full_name}
         subtitle={faixaAtual ? undefined : "sem graduação registrada"}
-        action={faixaAtual && <FaixaBadge faixa={faixaAtual.faixa} grau={faixaAtual.grau} />}
+        action={
+          <div className="flex items-center gap-3">
+            {faixaAtual && <FaixaBadge faixa={faixaAtual.faixa} grau={faixaAtual.grau} />}
+            <Link
+              href="/graduacao/ranking"
+              className="flex items-center gap-1 text-xs font-medium text-brand-600 hover:underline"
+            >
+              <Trophy className="h-3 w-3" />
+              Ranking de frequência
+            </Link>
+          </div>
+        }
       />
+
+      <section>
+        <h2 className="mb-3 font-display text-sm font-semibold uppercase tracking-wide text-ink-900/60">
+          Conquistas
+        </h2>
+        <Card className="p-5">
+          <ConquistasGrid conquistas={conquistas} />
+        </Card>
+      </section>
 
       {podeGraduar && (
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">

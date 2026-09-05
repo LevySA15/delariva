@@ -98,3 +98,15 @@ export const STATUS_MENSALIDADE_LABELS: Record<string, string> = {
   pendente: "Pendente",
   atrasado: "Atrasado",
 };
+
+// =========================================================
+// Conquistas — badges de frequência e tempo de treino
+// =========================================================
+export const CONQUISTAS_PRESENCA = [10, 25, 50, 100, 250, 500] as const;
+export const CONQUISTAS_TEMPO_MESES = [3, 6, 12, 24, 60] as const;
+
+export function labelTempoTreino(meses: number): string {
+  if (meses < 12) return `${meses} meses de treino`;
+  const anos = meses / 12;
+  return `${anos} ${anos === 1 ? "ano" : "anos"} de treino`;
+}
