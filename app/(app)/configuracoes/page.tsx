@@ -1,14 +1,15 @@
 import { redirect } from "next/navigation";
-import { Users, Link2, Swords, Wallet, Bell, CreditCard, type LucideIcon } from "lucide-react";
+import { Users, Link2, Bell, CreditCard, type LucideIcon } from "lucide-react";
 import { requireProfile } from "@/lib/supabase/current-user";
 import { PageHeader } from "@/components/ui/page-header";
 import { CardLink } from "@/components/ui/card";
 
+// "Turmas" (/aulas) e "Planos financeiros" (/financeiro/planos) já são
+// acessíveis pela própria navegação do módulo — não repetir aqui pra não
+// dar duas entradas diferentes pro mesmo destino.
 const ITEMS: { href: string; icon: LucideIcon; title: string; description: string }[] = [
   { href: "/configuracoes/usuarios", icon: Users, title: "Usuários", description: "Ver e alterar o perfil de cada pessoa cadastrada." },
   { href: "/configuracoes/vinculos", icon: Link2, title: "Vínculos responsável ↔ aluno menor", description: "Associe responsáveis aos alunos menores de idade." },
-  { href: "/aulas", icon: Swords, title: "Turmas", description: "Criar turmas, atribuir professores e matricular alunos." },
-  { href: "/financeiro/planos", icon: Wallet, title: "Planos financeiros", description: "Gerenciar os planos de mensalidade da academia." },
   { href: "/configuracoes/financeiro", icon: CreditCard, title: "Cobrança", description: "Chave Pix e outras configurações de pagamento." },
   { href: "/configuracoes/notificacoes", icon: Bell, title: "Notificações", description: "Enviar um aviso por push e ver o histórico de envios." },
 ];
