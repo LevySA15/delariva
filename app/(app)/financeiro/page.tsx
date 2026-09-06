@@ -1,13 +1,23 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Copy } from "lucide-react";
+import { Copy, ArrowRight } from "lucide-react";
 import { requireProfile } from "@/lib/supabase/current-user";
 import { createClient } from "@/lib/supabase/server";
-import { listMensalidadesDoMes, getResumoFinanceiroPorAluno, getPixKey } from "@/lib/queries/financeiro";
+import {
+  listMensalidadesDoMes,
+  getResumoFinanceiroPorAluno,
+  getPixKey,
+  getRelatorioMensal,
+  getProjecaoRecorrente,
+  listInadimplencia,
+} from "@/lib/queries/financeiro";
+import { listRecebedores, listPagamentosDoMes } from "@/lib/queries/pagamentos";
 import { getDependentes } from "@/lib/queries/dashboard";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardLink } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { LinkButton } from "@/components/ui/button";
+import { StatusMensalidadeBadge } from "@/components/ui/status-badge";
 import { MensalidadesList } from "./mensalidades-list";
 
 export default async function FinanceiroPage() {
@@ -80,24 +90,25 @@ export default async function FinanceiroPage() {
   }
 
   // dono
-  const mensalidades = await listMensalidadesDoMes(supabase);
+  const [mensalidades, meses, projecao, inadimplentes, recebedores, pagamentosDoMes] = await Promise.all([
+    listMensalidadesDoMes(supabase),
+    getRelatorioMensal(supabase, 1),
+    getProjecaoRecorrente(supabase),
+    listInadimplencia(supabase),
+    listRecebedores(supabase),
+    listPagamentosDoMes(supabase),
+  ]);
+
+  const mesAtual = meses[0];
+  const pagamentoPorProfessor = new Map(pagamentosDoMes.map((p) => [p.professor_id, p]));
 
   return (
-    <div>
+    <div className="space-y-6">
       <PageHeader
         title="Financeiro"
         subtitle="Mês atual"
         action={
           <div className="flex flex-wrap gap-2">
-            <LinkButton href="/financeiro/relatorio" variant="secondary">
-              Relatório
-            </LinkButton>
-            <LinkButton href="/financeiro/professores" variant="secondary">
-              Professores
-            </LinkButton>
-            <LinkButton href="/financeiro/inadimplencia" variant="secondary">
-              Inadimplência
-            </LinkButton>
             <LinkButton href="/financeiro/planos" variant="secondary">
               Planos
             </LinkButton>
@@ -106,7 +117,92 @@ export default async function FinanceiroPage() {
         }
       />
 
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <Card className="p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-ink-900/50">Recebido este mês</p>
+          <p className="mt-1 font-display text-2xl font-bold text-emerald-700">R$ {mesAtual.recebido.toFixed(2)}</p>
+        </Card>
+        <Card className="p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-ink-900/50">Pendente este mês</p>
+          <p className="mt-1 font-display text-2xl font-bold text-brand-700">R$ {mesAtual.pendente.toFixed(2)}</p>
+        </Card>
+        <Card className="p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-ink-900/50">Projeção recorrente/mês</p>
+          <p className="mt-1 font-display text-2xl font-bold text-ink-950">R$ {projecao.toFixed(2)}</p>
+        </Card>
+      </div>
+      <Link
+        href="/financeiro/relatorio"
+        className="flex w-fit items-center gap-1 text-xs font-medium text-brand-600 hover:underline"
+      >
+        Ver histórico completo (6 meses)
+        <ArrowRight className="h-3 w-3" />
+      </Link>
+
       <MensalidadesList mensalidades={mensalidades} />
+
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <Card className="p-4">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="font-display text-sm font-semibold uppercase tracking-wide text-ink-900/60">
+              Inadimplência
+            </h2>
+            <Link href="/financeiro/inadimplencia" className="flex items-center gap-1 text-xs font-medium text-brand-600 hover:underline">
+              Ver tudo
+              <ArrowRight className="h-3 w-3" />
+            </Link>
+          </div>
+          {inadimplentes.length === 0 ? (
+            <p className="text-sm text-ink-900/40">Nenhuma pendência. 🎉</p>
+          ) : (
+            <ul className="space-y-2">
+              {inadimplentes.slice(0, 5).map((i) => (
+                <li key={i.id} className="flex items-center justify-between text-sm">
+                  <Link href={`/financeiro/${i.aluno_id}`} className="font-medium text-ink-950 hover:text-brand-700 hover:underline">
+                    {i.aluno?.full_name ?? "—"}
+                  </Link>
+                  <StatusMensalidadeBadge status={i.status} />
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
+
+        <Card className="p-4">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="font-display text-sm font-semibold uppercase tracking-wide text-ink-900/60">
+              Pagamento a professores/instrutores
+            </h2>
+            <Link href="/financeiro/professores" className="flex items-center gap-1 text-xs font-medium text-brand-600 hover:underline">
+              Ver tudo
+              <ArrowRight className="h-3 w-3" />
+            </Link>
+          </div>
+          {recebedores.length === 0 ? (
+            <p className="text-sm text-ink-900/40">
+              Ninguém marcado como &ldquo;recebe pagamento&rdquo; ainda (em Configurações → Usuários).
+            </p>
+          ) : (
+            <ul className="space-y-2">
+              {recebedores.slice(0, 5).map((r) => {
+                const pagamento = pagamentoPorProfessor.get(r.id);
+                return (
+                  <li key={r.id} className="flex items-center justify-between text-sm">
+                    <Link href={`/financeiro/professores/${r.id}`} className="font-medium text-ink-950 hover:text-brand-700 hover:underline">
+                      {r.full_name}
+                    </Link>
+                    {pagamento ? (
+                      <StatusMensalidadeBadge status={pagamento.status} />
+                    ) : (
+                      <span className="text-xs text-ink-900/40">sem lançamento</span>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </Card>
+      </div>
     </div>
   );
 }
