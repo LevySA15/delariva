@@ -129,9 +129,14 @@ export async function marcarStatus(mensalidadeId: string, alunoId: string, statu
   revalidatePath("/financeiro");
 }
 
-export async function avisarPagamento(mensalidadeId: string) {
+export type AvisoState = { error: string | null; sent: boolean };
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- assinatura exigida pelo useActionState, sem uso
+export async function avisarPagamento(mensalidadeId: string, _prevState: AvisoState, _formData: FormData): Promise<AvisoState> {
   const supabase = await createClient();
-  await supabase.rpc("avisar_pagamento", { p_mensalidade_id: mensalidadeId });
+  const { error } = await supabase.rpc("avisar_pagamento", { p_mensalidade_id: mensalidadeId });
+  if (error) return { error: error.message, sent: false };
+  return { error: null, sent: true };
 }
 
 export async function atualizarDesconto(alunoId: string, formData: FormData) {

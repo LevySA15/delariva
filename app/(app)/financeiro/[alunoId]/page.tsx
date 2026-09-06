@@ -10,8 +10,9 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { StatusMensalidadeBadge } from "@/components/ui/status-badge";
 import { inputClass } from "@/components/ui/field";
-import { marcarPago, marcarStatus, atualizarDesconto, atualizarDiaVencimento, avisarPagamento } from "../actions";
+import { marcarPago, marcarStatus, atualizarDesconto, atualizarDiaVencimento } from "../actions";
 import { NovaCobrancaForm } from "./nova-cobranca-form";
+import { AvisoPagamentoButton } from "./aviso-pagamento-button";
 
 export default async function FinanceiroAlunoPage({
   params,
@@ -157,13 +158,7 @@ export default async function FinanceiroAlunoPage({
                 </form>
               )}
 
-              {!podeGerenciar && m.status !== "pago" && (
-                <form action={avisarPagamento.bind(null, m.id)} className="mt-3">
-                  <Button type="submit" size="sm" variant="secondary">
-                    Já paguei
-                  </Button>
-                </form>
-              )}
+              {!podeGerenciar && m.status !== "pago" && <AvisoPagamentoButton mensalidadeId={m.id} />}
 
               {podeGerenciar && m.status === "pago" && (
                 <form action={marcarStatus.bind(null, m.id, alunoId, "pendente")} className="mt-3">
