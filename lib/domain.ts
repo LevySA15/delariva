@@ -17,6 +17,7 @@ export type ModuleKey =
   | "graduacao"
   | "financeiro"
   | "chat"
+  | "membros"
   | "configuracoes";
 
 export const MODULE_LABELS: Record<ModuleKey, string> = {
@@ -26,17 +27,18 @@ export const MODULE_LABELS: Record<ModuleKey, string> = {
   graduacao: "Graduação",
   financeiro: "Financeiro",
   chat: "Chat",
+  membros: "Membros",
   configuracoes: "Configurações",
 };
 
 // Quais módulos aparecem no menu de cada papel.
 // Regra do dono: vê tudo. Regra do aluno menor: tudo sobre treino, menos financeiro.
 export const ROLE_MODULES: Record<UserRole, ModuleKey[]> = {
-  dono: ["dashboard", "perfil", "aulas", "graduacao", "financeiro", "chat", "configuracoes"],
-  professor: ["dashboard", "perfil", "aulas", "graduacao", "chat"],
-  aluno: ["dashboard", "perfil", "aulas", "graduacao", "financeiro", "chat"],
-  aluno_menor: ["dashboard", "perfil", "aulas", "graduacao", "chat"],
-  responsavel: ["dashboard", "perfil", "aulas", "graduacao", "financeiro", "chat"],
+  dono: ["dashboard", "perfil", "aulas", "graduacao", "financeiro", "chat", "membros", "configuracoes"],
+  professor: ["dashboard", "perfil", "aulas", "graduacao", "chat", "membros"],
+  aluno: ["dashboard", "perfil", "aulas", "graduacao", "financeiro", "chat", "membros"],
+  aluno_menor: ["dashboard", "perfil", "aulas", "graduacao", "chat", "membros"],
+  responsavel: ["dashboard", "perfil", "aulas", "graduacao", "financeiro", "chat", "membros"],
 };
 
 export function canAccessModule(role: UserRole, module: ModuleKey): boolean {

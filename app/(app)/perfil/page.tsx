@@ -13,7 +13,7 @@ import { StatCard } from "@/components/stat-card";
 import { FaixaBadge } from "@/components/ui/faixa-badge";
 import { PerfilForm } from "./perfil-form";
 import { AvatarUpload } from "./avatar-upload";
-import { RelacoesGrid } from "./relacoes";
+import { RelacoesGrid } from "@/components/relacoes-grid";
 
 export default async function PerfilPage({
   searchParams,

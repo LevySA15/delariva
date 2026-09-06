@@ -86,6 +86,44 @@ export async function getColegasProfessor(supabase: DB, professorId: string): Pr
   );
 }
 
+// Pro dono: todo mundo, agrupado por turma (professores + alunos matriculados).
+export async function getDiretorioDono(supabase: DB): Promise<TurmaComPessoas[]> {
+  const { data: turmas } = await supabase.from("turmas").select("id, nome").order("nome");
+  if (!turmas || turmas.length === 0) return [];
+
+  const turmaIds = turmas.map((t) => t.id);
+  const [professoresRes, alunosRes] = await Promise.all([
+    supabase
+      .from("turma_professores")
+      .select("turma_id, professor:profiles!turma_professores_professor_id_fkey(id, full_name, avatar_url)")
+      .in("turma_id", turmaIds),
+    supabase
+      .from("matriculas")
+      .select("turma_id, aluno:profiles!matriculas_aluno_id_fkey(id, full_name, avatar_url)")
+      .in("turma_id", turmaIds)
+      .eq("ativo", true),
+  ]);
+
+  const porTurma = new Map<string, PessoaTurma[]>();
+
+  for (const { turma_id, professor } of professoresRes.data ?? []) {
+    if (!professor) continue;
+    const lista = porTurma.get(turma_id) ?? [];
+    lista.push(professor);
+    porTurma.set(turma_id, lista);
+  }
+  for (const { turma_id, aluno } of alunosRes.data ?? []) {
+    if (!aluno) continue;
+    const lista = porTurma.get(turma_id) ?? [];
+    lista.push(aluno);
+    porTurma.set(turma_id, lista);
+  }
+
+  return turmas
+    .map((t) => ({ turmaId: t.id, turmaNome: t.nome, pessoas: porTurma.get(t.id) ?? [] }))
+    .filter((g) => g.pessoas.length > 0);
+}
+
 export type MembroCard = {
   id: string;
   full_name: string;

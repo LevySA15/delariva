@@ -13,6 +13,7 @@ import {
   Settings,
   LogOut,
   FlaskConical,
+  Users,
   type LucideIcon,
 } from "lucide-react";
 import { logout } from "@/lib/supabase/actions";
@@ -28,6 +29,7 @@ const MODULE_HREFS: Record<ModuleKey, string> = {
   graduacao: "/graduacao",
   financeiro: "/financeiro",
   chat: "/chat",
+  membros: "/membros",
   configuracoes: "/configuracoes",
 };
 
@@ -38,6 +40,7 @@ const MODULE_ICONS: Record<ModuleKey, LucideIcon> = {
   graduacao: Award,
   financeiro: Wallet,
   chat: MessageCircle,
+  membros: Users,
   configuracoes: Settings,
 };
 
