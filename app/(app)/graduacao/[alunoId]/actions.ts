@@ -39,6 +39,10 @@ export async function registrarGraduacao(
 
   if (error) return { error: error.message };
 
+  // profiles.faixa_categoria só existe pra pré-selecionar a categoria certa
+  // da próxima vez (aluno_menor nem sempre está marcado como infantil ainda)
+  await supabase.from("profiles").update({ faixa_categoria: faixaCategoria }).eq("id", alunoId);
+
   revalidatePath(`/graduacao/${alunoId}`);
   return ok;
 }

@@ -48,6 +48,13 @@ export function canAccessModule(role: UserRole, module: ModuleKey): boolean {
 // =========================================================
 export type FaixaCategoria = "adulto" | "infantil";
 
+// profiles.faixa_categoria é opcional (só é preenchido quando alguém já
+// registrou uma graduação) — até lá, cai no padrão pelo papel: aluno_menor
+// é sempre infantil, o resto é adulto.
+export function faixaCategoriaPadrao(role: UserRole): FaixaCategoria {
+  return role === "aluno_menor" ? "infantil" : "adulto";
+}
+
 export const FAIXAS_ADULTO = ["branca", "azul", "roxa", "marrom", "preta"] as const;
 export const FAIXAS_INFANTIL = ["branca", "cinza", "amarela", "laranja", "verde"] as const;
 

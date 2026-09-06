@@ -5,7 +5,7 @@ import { requireProfile } from "@/lib/supabase/current-user";
 import { createClient } from "@/lib/supabase/server";
 import { getAvaliacoes, getGraduacoes } from "@/lib/queries/graduacao";
 import { getConquistasAluno } from "@/lib/queries/frequencia";
-import { CRITERIO_LABELS } from "@/lib/domain";
+import { CRITERIO_LABELS, faixaCategoriaPadrao } from "@/lib/domain";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -28,10 +28,12 @@ export default async function GraduacaoAlunoPage({
   const { data: aluno } = await supabase.from("profiles").select("*").eq("id", alunoId).single();
   if (!aluno) notFound();
 
+  const categoriaAluno = aluno.faixa_categoria ?? faixaCategoriaPadrao(aluno.role);
+
   const [graduacoes, avaliacoes, conquistas] = await Promise.all([
     getGraduacoes(supabase, alunoId),
     getAvaliacoes(supabase, alunoId),
-    getConquistasAluno(supabase, alunoId, aluno.faixa_categoria ?? "adulto"),
+    getConquistasAluno(supabase, alunoId, categoriaAluno),
   ]);
 
   const faixaAtual = graduacoes[0];
@@ -67,7 +69,7 @@ export default async function GraduacaoAlunoPage({
 
       {podeGraduar && (
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <GraduacaoForm alunoId={alunoId} categoriaPadrao={aluno.faixa_categoria ?? "adulto"} />
+          <GraduacaoForm alunoId={alunoId} categoriaPadrao={categoriaAluno} />
           <AvaliacaoForm
             alunoId={alunoId}
             graduacoes={graduacoes.map((g) => ({ id: g.id, faixa: g.faixa, grau: g.grau, data: g.data }))}
