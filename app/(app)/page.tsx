@@ -25,7 +25,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-8">
-      <PageHeader title={`Olá, ${profile.full_name.split(" ")[0]}`} subtitle={ROLE_LABELS[profile.role]} />
+      <PageHeader title={`Olá, ${profile.full_name.split(" ")[0]}`} subtitle={ROLE_LABELS[profile.role]} showBack={false} />
 
       {profile.role === "dono" && <DonoStats />}
       {profile.role === "professor" && <ProfessorStats professorId={profile.id} />}
