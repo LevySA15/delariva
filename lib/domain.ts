@@ -111,7 +111,11 @@ export function labelTempoTreino(meses: number): string {
   return `${anos} ${anos === 1 ? "ano" : "anos"} de treino`;
 }
 
-export const CONQUISTAS_VETERANIA_MESES = [6, 12, 24, 48] as const;
+export const CONQUISTAS_GRAUS = [1, 2, 3, 4] as const;
+
+export function labelGrau(grau: number): string {
+  return `${grau}º grau`;
+}
 
 export function labelVeterania(meses: number): string {
   if (meses < 12) return `${meses} meses na faixa atual`;

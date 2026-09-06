@@ -3,13 +3,13 @@ import type { Conquista } from "@/lib/queries/frequencia";
 
 const GRUPO_LABELS: Record<Conquista["grupo"], string> = {
   faixa: "Faixas conquistadas",
-  veterania: "Veterania na faixa atual",
+  grau: "Graus na faixa atual",
   presenca: "Frequência",
   tempo: "Tempo de treino",
   graduacao: "Graduações",
 };
 
-const ORDEM_GRUPOS: Conquista["grupo"][] = ["faixa", "veterania", "presenca", "tempo", "graduacao"];
+const ORDEM_GRUPOS: Conquista["grupo"][] = ["faixa", "grau", "presenca", "tempo", "graduacao"];
 
 export function ConquistasGrid({ conquistas }: { conquistas: Conquista[] }) {
   const porGrupo = ORDEM_GRUPOS.map((grupo) => ({

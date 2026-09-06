@@ -3,10 +3,10 @@ import type { Database } from "@/lib/supabase/database.types";
 import {
   CONQUISTAS_PRESENCA,
   CONQUISTAS_TEMPO_MESES,
-  CONQUISTAS_VETERANIA_MESES,
+  CONQUISTAS_GRAUS,
   FAIXA_COR_HEX,
   labelTempoTreino,
-  labelVeterania,
+  labelGrau,
   capitalizar,
   faixasPorCategoria,
   type FaixaCategoria,
@@ -39,7 +39,7 @@ export type Conquista = {
   titulo: string;
   descricao: string;
   alcancada: boolean;
-  grupo: "faixa" | "veterania" | "presenca" | "tempo" | "graduacao";
+  grupo: "faixa" | "grau" | "presenca" | "tempo" | "graduacao";
   cor?: string;
 };
 
@@ -60,7 +60,7 @@ export async function getConquistasAluno(
       .eq("aluno_id", alunoId)
       .order("data_matricula", { ascending: true })
       .limit(1),
-    supabase.from("graduacoes").select("faixa, data").eq("aluno_id", alunoId).order("data", { ascending: false }),
+    supabase.from("graduacoes").select("faixa, grau, data").eq("aluno_id", alunoId).order("data", { ascending: false }),
   ]);
 
   const totalPresencas = presencasRes.count ?? 0;
@@ -75,12 +75,7 @@ export async function getConquistasAluno(
     : 0;
 
   const faixasAlcancadas = new Set(graduacoes.map((g) => g.faixa));
-  const dataFaixaAtual = graduacoes[0]?.data;
-  const mesesNaFaixaAtual = dataFaixaAtual
-    ? Math.floor(
-        (Date.now() - new Date(`${dataFaixaAtual}T00:00:00`).getTime()) / (1000 * 60 * 60 * 24 * 30.44),
-      )
-    : 0;
+  const grauAtual = graduacoes[0]?.grau ?? 0;
 
   const badgesPresenca: Conquista[] = CONQUISTAS_PRESENCA.map((meta) => ({
     key: `presenca-${meta}`,
@@ -124,13 +119,13 @@ export async function getConquistasAluno(
     cor: FAIXA_COR_HEX[faixa],
   }));
 
-  const badgesVeterania: Conquista[] = CONQUISTAS_VETERANIA_MESES.map((meta) => ({
-    key: `veterania-${meta}`,
-    titulo: labelVeterania(meta),
-    descricao: `${meta} meses na faixa atual sem graduar`,
-    alcancada: mesesNaFaixaAtual >= meta,
-    grupo: "veterania",
+  const badgesGrau: Conquista[] = CONQUISTAS_GRAUS.map((meta) => ({
+    key: `grau-${meta}`,
+    titulo: labelGrau(meta),
+    descricao: `${meta}º grau na faixa atual`,
+    alcancada: grauAtual >= meta,
+    grupo: "grau",
   }));
 
-  return [...badgesFaixa, ...badgesVeterania, ...badgesPresenca, ...badgesTempo, ...badgesGraduacao];
+  return [...badgesFaixa, ...badgesGrau, ...badgesPresenca, ...badgesTempo, ...badgesGraduacao];
 }
