@@ -9,6 +9,21 @@ export async function listPlanos(supabase: DB) {
   return data ?? [];
 }
 
+export async function listPlanosAtivos(supabase: DB) {
+  const { data } = await supabase.from("planos").select("*").eq("ativo", true).order("nome");
+  return data ?? [];
+}
+
+export async function listPlanosComPacote(supabase: DB) {
+  const { data } = await supabase
+    .from("planos")
+    .select("*")
+    .eq("ativo", true)
+    .not("pacote_meses", "is", null)
+    .order("nome");
+  return data ?? [];
+}
+
 export async function getMensalidades(supabase: DB, alunoId: string) {
   const { data } = await supabase
     .from("mensalidades")

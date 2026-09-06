@@ -317,6 +317,8 @@ export interface Database {
           periodicidade: string;
           ativo: boolean;
           created_at: string;
+          pacote_meses: number | null;
+          pacote_desconto_percentual: number | null;
         };
         Insert: Partial<Database["public"]["Tables"]["planos"]["Row"]> & {
           nome: string;

@@ -3,9 +3,9 @@ import { requireProfile } from "@/lib/supabase/current-user";
 import { createClient } from "@/lib/supabase/server";
 import { listPlanos } from "@/lib/queries/financeiro";
 import { PageHeader } from "@/components/ui/page-header";
-import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PlanosForm } from "./planos-form";
+import { PlanoCard } from "./plano-card";
 
 export default async function PlanosPage() {
   const profile = await requireProfile();
@@ -24,12 +24,7 @@ export default async function PlanosPage() {
       ) : (
         <div className="space-y-2">
           {planos.map((p) => (
-            <Card key={p.id} className="flex items-center justify-between p-4">
-              <span className="font-semibold text-ink-950">{p.nome}</span>
-              <span className="text-sm text-ink-900/50">
-                R$ {Number(p.valor).toFixed(2)} · {p.periodicidade}
-              </span>
-            </Card>
+            <PlanoCard key={p.id} plano={p} />
           ))}
         </div>
       )}

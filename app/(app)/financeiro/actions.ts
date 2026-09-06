@@ -24,6 +24,135 @@ export async function criarPlano(_prevState: FormState, formData: FormData): Pro
   return ok;
 }
 
+export async function atualizarPlano(planoId: string, formData: FormData) {
+  const nome = String(formData.get("nome") ?? "").trim();
+  const valor = Number(formData.get("valor") ?? 0);
+  const periodicidade = String(formData.get("periodicidade") ?? "mensal");
+  const ativo = formData.get("ativo") === "on";
+  const pacoteMesesRaw = String(formData.get("pacote_meses") ?? "").trim();
+  const pacoteDescontoRaw = String(formData.get("pacote_desconto_percentual") ?? "").trim();
+
+  if (!nome || valor <= 0) return;
+
+  const supabase = await createClient();
+  await supabase
+    .from("planos")
+    .update({
+      nome,
+      valor,
+      periodicidade,
+      ativo,
+      pacote_meses: pacoteMesesRaw ? Number(pacoteMesesRaw) : null,
+      pacote_desconto_percentual: pacoteDescontoRaw ? Number(pacoteDescontoRaw) : null,
+    })
+    .eq("id", planoId);
+
+  revalidatePath("/financeiro/planos");
+}
+
+export async function deletarPlano(planoId: string) {
+  const supabase = await createClient();
+  const { error } = await supabase.from("planos").delete().eq("id", planoId);
+
+  // FK de mensalidades.plano_id impede apagar um plano já usado — nesse
+  // caso só desativa, pra sumir das opções de novo lançamento.
+  if (error) {
+    await supabase.from("planos").update({ ativo: false }).eq("id", planoId);
+  }
+
+  revalidatePath("/financeiro/planos");
+}
+
+export async function lancarPacoteAntecipado(_prevState: FormState, formData: FormData): Promise<FormState> {
+  const alunoId = String(formData.get("aluno_id") ?? "");
+  const planoId = String(formData.get("plano_id") ?? "");
+  const mesInicial = String(formData.get("mes_inicial") ?? "");
+
+  if (!alunoId || !planoId || !mesInicial) {
+    return { error: "Preencha aluno, plano e mês inicial." };
+  }
+
+  const supabase = await createClient();
+
+  const [{ data: plano }, { data: aluno }] = await Promise.all([
+    supabase.from("planos").select("valor, pacote_meses, pacote_desconto_percentual").eq("id", planoId).single(),
+    supabase.from("profiles").select("desconto_percentual, dia_vencimento").eq("id", alunoId).single(),
+  ]);
+
+  if (!plano || !plano.pacote_meses) {
+    return { error: "Esse plano não tem promoção de pacote configurada." };
+  }
+  if (!aluno) {
+    return { error: "Aluno não encontrado." };
+  }
+
+  const descontoAluno = aluno.desconto_percentual ?? 0;
+  const valorCheio = Number(plano.valor) * (1 - descontoAluno / 100);
+
+  for (let i = 0; i < plano.pacote_meses; i++) {
+    const mesReferencia = somarMeses(mesInicial, i);
+    const dataVencimento = diaDoVencimentoDoMes(mesReferencia, aluno.dia_vencimento ?? 10);
+
+    const { data: existente } = await supabase
+      .from("mensalidades")
+      .select("id")
+      .eq("aluno_id", alunoId)
+      .eq("mes_referencia", mesReferencia)
+      .eq("tipo", "mensalidade")
+      .maybeSingle();
+
+    const dados = {
+      plano_id: planoId,
+      valor: valorCheio,
+      status: "pago" as const,
+      data_pagamento: new Date().toISOString().slice(0, 10),
+      forma_pagamento: "pacote antecipado",
+      data_vencimento: dataVencimento,
+    };
+
+    const { error } = existente
+      ? await supabase.from("mensalidades").update(dados).eq("id", existente.id)
+      : await supabase.from("mensalidades").insert({ aluno_id: alunoId, mes_referencia: mesReferencia, tipo: "mensalidade", ...dados });
+
+    if (error) return { error: error.message };
+  }
+
+  if (plano.pacote_desconto_percentual) {
+    const mesPromocional = somarMeses(mesInicial, plano.pacote_meses);
+    const valorPromocional = valorCheio * (1 - plano.pacote_desconto_percentual / 100);
+    const dataVencimento = diaDoVencimentoDoMes(mesPromocional, aluno.dia_vencimento ?? 10);
+
+    const { data: existente } = await supabase
+      .from("mensalidades")
+      .select("id")
+      .eq("aluno_id", alunoId)
+      .eq("mes_referencia", mesPromocional)
+      .eq("tipo", "mensalidade")
+      .maybeSingle();
+
+    const dados = {
+      plano_id: planoId,
+      valor: valorPromocional,
+      data_vencimento: dataVencimento,
+      descricao: `Promoção: pacote de ${plano.pacote_meses} meses (${plano.pacote_desconto_percentual}% off)`,
+    };
+
+    const { error } = existente
+      ? await supabase.from("mensalidades").update(dados).eq("id", existente.id)
+      : await supabase.from("mensalidades").insert({ aluno_id: alunoId, mes_referencia: mesPromocional, tipo: "mensalidade", ...dados });
+
+    if (error) return { error: error.message };
+  }
+
+  redirect(`/financeiro/${alunoId}`);
+}
+
+function somarMeses(mesReferencia: string, quantidade: number): string {
+  const [ano, mes] = mesReferencia.split("-").map(Number);
+  const data = new Date(ano, mes - 1 + quantidade, 1);
+  return `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, "0")}-01`;
+}
+
 export async function lancarMensalidade(_prevState: FormState, formData: FormData): Promise<FormState> {
   const alunoId = String(formData.get("aluno_id") ?? "");
   const planoId = String(formData.get("plano_id") ?? "") || null;

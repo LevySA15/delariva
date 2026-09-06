@@ -3,7 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { Wallet, Receipt, Copy } from "lucide-react";
 import { requireProfile } from "@/lib/supabase/current-user";
 import { createClient } from "@/lib/supabase/server";
-import { getMensalidades, getPixKey } from "@/lib/queries/financeiro";
+import { getMensalidades, getPixKey, listPlanosComPacote } from "@/lib/queries/financeiro";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ import { inputClass } from "@/components/ui/field";
 import { marcarPago, marcarStatus, atualizarDesconto, atualizarDiaVencimento } from "../actions";
 import { NovaCobrancaForm } from "./nova-cobranca-form";
 import { AvisoPagamentoButton } from "./aviso-pagamento-button";
+import { PacoteAntecipadoForm } from "./pacote-antecipado-form";
 
 export default async function FinanceiroAlunoPage({
   params,
@@ -37,7 +38,11 @@ export default async function FinanceiroAlunoPage({
     .single();
   if (!aluno) notFound();
 
-  const [mensalidades, pixKey] = await Promise.all([getMensalidades(supabase, alunoId), getPixKey(supabase)]);
+  const [mensalidades, pixKey, planosComPacote] = await Promise.all([
+    getMensalidades(supabase, alunoId),
+    getPixKey(supabase),
+    listPlanosComPacote(supabase),
+  ]);
   const podeGerenciar = profile.role === "dono";
   const temPendencia = mensalidades.some((m) => m.status !== "pago");
 
@@ -113,7 +118,12 @@ export default async function FinanceiroAlunoPage({
         </Card>
       )}
 
-      {podeGerenciar && <NovaCobrancaForm alunoId={alunoId} />}
+      {podeGerenciar && (
+        <div className="flex flex-wrap gap-3">
+          <NovaCobrancaForm alunoId={alunoId} />
+          {planosComPacote.length > 0 && <PacoteAntecipadoForm alunoId={alunoId} planos={planosComPacote} />}
+        </div>
+      )}
 
       {mensalidades.length === 0 ? (
         <EmptyState icon={Wallet} message="Nenhuma mensalidade lançada ainda." />
@@ -134,6 +144,9 @@ export default async function FinanceiroAlunoPage({
                   <p className="text-sm text-ink-900/50">
                     {m.tipo === "avulsa" ? "Avulsa" : (m.plano?.nome ?? "Sem plano")} · R$ {Number(m.valor).toFixed(2)}
                   </p>
+                  {m.tipo === "mensalidade" && m.descricao && (
+                    <p className="mt-0.5 text-xs text-brand-600">{m.descricao}</p>
+                  )}
                 </div>
                 <StatusMensalidadeBadge status={m.status} />
               </div>

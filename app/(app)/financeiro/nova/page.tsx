@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { requireProfile } from "@/lib/supabase/current-user";
 import { createClient } from "@/lib/supabase/server";
-import { listAlunosAtivos, listPlanos } from "@/lib/queries/financeiro";
+import { listAlunosAtivos, listPlanosAtivos } from "@/lib/queries/financeiro";
 import { PageHeader } from "@/components/ui/page-header";
 import { NovaMensalidadeForm } from "./nova-mensalidade-form";
 
@@ -10,7 +10,7 @@ export default async function NovaMensalidadePage() {
   if (profile.role !== "dono") redirect("/financeiro");
 
   const supabase = await createClient();
-  const [alunos, planos] = await Promise.all([listAlunosAtivos(supabase), listPlanos(supabase)]);
+  const [alunos, planos] = await Promise.all([listAlunosAtivos(supabase), listPlanosAtivos(supabase)]);
 
   return (
     <div>
