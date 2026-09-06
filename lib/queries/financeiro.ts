@@ -130,3 +130,41 @@ export async function getReceitaMensal(supabase: DB, meses = 6) {
 
   return janela.map((j) => ({ label: j.label, value: somaPorMes.get(j.chave) ?? 0 }));
 }
+
+export async function getRelatorioMensal(supabase: DB, meses = 6) {
+  const janela = mesesAtras(meses);
+  const inicio = janela[0].chave;
+
+  const { data } = await supabase
+    .from("mensalidades")
+    .select("valor, mes_referencia, status")
+    .gte("mes_referencia", inicio);
+
+  const porMes = new Map<string, { recebido: number; pendente: number }>();
+  for (const m of data ?? []) {
+    const cur = porMes.get(m.mes_referencia) ?? { recebido: 0, pendente: 0 };
+    if (m.status === "pago") cur.recebido += Number(m.valor);
+    else cur.pendente += Number(m.valor);
+    porMes.set(m.mes_referencia, cur);
+  }
+
+  return janela.map((j) => ({ label: j.label, ...(porMes.get(j.chave) ?? { recebido: 0, pendente: 0 }) }));
+}
+
+// Projeção da próxima cobrança recorrente: soma o valor da mensalidade mais
+// recente de cada aluno (mesma lógica do cron de geração automática), já que
+// não existe um vínculo persistente aluno->plano além do último lançamento.
+export async function getProjecaoRecorrente(supabase: DB) {
+  const { data } = await supabase
+    .from("mensalidades")
+    .select("aluno_id, valor, mes_referencia")
+    .eq("tipo", "mensalidade")
+    .order("mes_referencia", { ascending: false });
+
+  const ultimoPorAluno = new Map<string, number>();
+  for (const m of data ?? []) {
+    if (!ultimoPorAluno.has(m.aluno_id)) ultimoPorAluno.set(m.aluno_id, Number(m.valor));
+  }
+
+  return [...ultimoPorAluno.values()].reduce((soma, v) => soma + v, 0);
+}
