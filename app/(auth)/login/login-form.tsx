@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useActionState } from "react";
-import { useSearchParams } from "next/navigation";
 import { login, type AuthState } from "../actions";
 
 const initialState: AuthState = { error: null };
@@ -12,18 +11,10 @@ const inputClass =
 
 export function LoginForm() {
   const [state, formAction, pending] = useActionState(login, initialState);
-  const searchParams = useSearchParams();
-  const cadastrado = searchParams.get("cadastrado");
 
   return (
     <form action={formAction} className="space-y-4">
       <h2 className="font-display text-lg font-semibold uppercase tracking-wide text-white">Entrar</h2>
-
-      {cadastrado && (
-        <p className="rounded-md bg-emerald-950 px-3 py-2 text-sm text-emerald-300">
-          Cadastro realizado! Faça login para continuar.
-        </p>
-      )}
 
       <div className="space-y-1.5">
         <label htmlFor="email" className="text-xs font-semibold uppercase tracking-wide text-white/40">

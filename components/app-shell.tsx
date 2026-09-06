@@ -6,6 +6,7 @@ import { Menu, X } from "lucide-react";
 import { Sidebar } from "./sidebar";
 import { ChatBubble } from "./chat-bubble";
 import { PushRegistration } from "./push-registration";
+import { DevBanner } from "./dev-banner";
 import type { UserRole } from "@/lib/domain";
 import type { listConversasDiretas, getUnreadCounts } from "@/lib/queries/chat";
 
@@ -13,6 +14,7 @@ export function AppShell({
   role,
   fullName,
   avatarUrl,
+  email,
   userId,
   conversas,
   naoLidas,
@@ -21,6 +23,7 @@ export function AppShell({
   role: UserRole;
   fullName: string;
   avatarUrl?: string | null;
+  email: string | null;
   userId: string;
   conversas: Awaited<ReturnType<typeof listConversasDiretas>>;
   naoLidas: Awaited<ReturnType<typeof getUnreadCounts>>;
@@ -32,7 +35,7 @@ export function AppShell({
     <div className="flex h-screen overflow-hidden bg-surface">
       {/* sidebar desktop */}
       <div className="hidden md:block">
-        <Sidebar role={role} fullName={fullName} avatarUrl={avatarUrl} unreadTotal={naoLidas.total} />
+        <Sidebar role={role} fullName={fullName} avatarUrl={avatarUrl} email={email} unreadTotal={naoLidas.total} />
       </div>
 
       {/* sidebar mobile (drawer) */}
@@ -40,7 +43,7 @@ export function AppShell({
         <div className="fixed inset-0 z-40 md:hidden">
           <div className="absolute inset-0 bg-black/60" onClick={() => setMobileOpen(false)} />
           <div className="relative z-50 h-full">
-            <Sidebar role={role} fullName={fullName} avatarUrl={avatarUrl} unreadTotal={naoLidas.total} />
+            <Sidebar role={role} fullName={fullName} avatarUrl={avatarUrl} email={email} unreadTotal={naoLidas.total} />
             <button
               aria-label="Fechar menu"
               onClick={() => setMobileOpen(false)}
@@ -64,6 +67,8 @@ export function AppShell({
           <Image src="/logo/badge.png" alt="DELARIVA" width={28} height={28} className="h-7 w-7" />
           <span className="font-display font-semibold uppercase tracking-wider text-white">DELARIVA</span>
         </header>
+
+        <DevBanner email={email} role={role} />
 
         <main className="flex-1 overflow-y-auto p-4 md:p-8">
           <div className="mx-auto max-w-6xl">{children}</div>

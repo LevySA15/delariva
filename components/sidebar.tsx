@@ -12,12 +12,14 @@ import {
   MessageCircle,
   Settings,
   LogOut,
+  FlaskConical,
   type LucideIcon,
 } from "lucide-react";
 import { logout } from "@/lib/supabase/actions";
 import { Avatar } from "@/components/avatar";
 import { GlobalSearch } from "@/components/global-search";
 import { MODULE_LABELS, ROLE_LABELS, ROLE_MODULES, type ModuleKey, type UserRole } from "@/lib/domain";
+import { DEV_EMAIL } from "@/lib/dev-accounts";
 
 const MODULE_HREFS: Record<ModuleKey, string> = {
   dashboard: "/",
@@ -43,11 +45,13 @@ export function Sidebar({
   role,
   fullName,
   avatarUrl,
+  email,
   unreadTotal = 0,
 }: {
   role: UserRole;
   fullName: string;
   avatarUrl?: string | null;
+  email?: string | null;
   unreadTotal?: number;
 }) {
   const pathname = usePathname();
@@ -102,6 +106,19 @@ export function Sidebar({
             <p className="text-xs text-white/40">{ROLE_LABELS[role]}</p>
           </div>
         </div>
+        {email === DEV_EMAIL && (
+          <Link
+            href="/dev"
+            className={`mb-2 flex items-center justify-center gap-2 rounded-md border px-3 py-2 text-sm font-medium transition ${
+              pathname === "/dev"
+                ? "border-amber-500 bg-amber-500/10 text-amber-400"
+                : "border-white/10 text-white/60 hover:border-amber-500/50 hover:text-amber-400"
+            }`}
+          >
+            <FlaskConical className="h-4 w-4" />
+            Dev
+          </Link>
+        )}
         <form action={logout}>
           <button
             type="submit"

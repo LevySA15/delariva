@@ -20,6 +20,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       role={profile.role}
       fullName={profile.full_name}
       avatarUrl={profile.avatar_url}
+      email={profile.email}
       userId={profile.id}
       conversas={conversas}
       naoLidas={naoLidas}
