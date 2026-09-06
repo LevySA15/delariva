@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { Users, Link2, Swords, Wallet, Bell, type LucideIcon } from "lucide-react";
+import { Users, Link2, Swords, Wallet, Bell, CreditCard, type LucideIcon } from "lucide-react";
 import { requireProfile } from "@/lib/supabase/current-user";
 import { PageHeader } from "@/components/ui/page-header";
 import { CardLink } from "@/components/ui/card";
@@ -9,6 +9,7 @@ const ITEMS: { href: string; icon: LucideIcon; title: string; description: strin
   { href: "/configuracoes/vinculos", icon: Link2, title: "Vínculos responsável ↔ aluno menor", description: "Associe responsáveis aos alunos menores de idade." },
   { href: "/aulas", icon: Swords, title: "Turmas", description: "Criar turmas, atribuir professores e matricular alunos." },
   { href: "/financeiro/planos", icon: Wallet, title: "Planos financeiros", description: "Gerenciar os planos de mensalidade da academia." },
+  { href: "/configuracoes/financeiro", icon: CreditCard, title: "Cobrança", description: "Chave Pix e outras configurações de pagamento." },
   { href: "/configuracoes/notificacoes", icon: Bell, title: "Notificações", description: "Enviar um aviso por push e ver o histórico de envios." },
 ];
 

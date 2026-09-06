@@ -18,6 +18,20 @@ export async function getMensalidades(supabase: DB, alunoId: string) {
   return data ?? [];
 }
 
+export async function getMensalidadeDetalhada(supabase: DB, mensalidadeId: string) {
+  const { data } = await supabase
+    .from("mensalidades")
+    .select("*, plano:planos(nome), aluno:profiles!mensalidades_aluno_id_fkey(full_name)")
+    .eq("id", mensalidadeId)
+    .single();
+  return data;
+}
+
+export async function getPixKey(supabase: DB) {
+  const { data } = await supabase.from("academia_config").select("pix_key").eq("id", true).single();
+  return data?.pix_key ?? null;
+}
+
 export async function listMensalidadesDoMes(supabase: DB) {
   const { data } = await supabase
     .from("mensalidades")

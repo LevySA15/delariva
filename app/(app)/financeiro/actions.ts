@@ -35,24 +35,74 @@ export async function lancarMensalidade(_prevState: FormState, formData: FormDat
     return { error: "Preencha aluno, mês e valor." };
   }
 
-  const dataVencimento = dataVencimentoRaw || diaDezDoMes(mesReferencia);
-
   const supabase = await createClient();
-  const { error } = await supabase
+
+  let dataVencimento = dataVencimentoRaw;
+  if (!dataVencimento) {
+    const { data: aluno } = await supabase.from("profiles").select("dia_vencimento").eq("id", alunoId).single();
+    dataVencimento = diaDoVencimentoDoMes(mesReferencia, aluno?.dia_vencimento ?? 10);
+  }
+
+  const { data: existente } = await supabase
     .from("mensalidades")
-    .upsert(
-      { aluno_id: alunoId, plano_id: planoId, mes_referencia: mesReferencia, valor, data_vencimento: dataVencimento },
-      { onConflict: "aluno_id,mes_referencia" },
-    );
+    .select("id")
+    .eq("aluno_id", alunoId)
+    .eq("mes_referencia", mesReferencia)
+    .eq("tipo", "mensalidade")
+    .maybeSingle();
+
+  const { error } = existente
+    ? await supabase
+        .from("mensalidades")
+        .update({ plano_id: planoId, valor, data_vencimento: dataVencimento })
+        .eq("id", existente.id)
+    : await supabase
+        .from("mensalidades")
+        .insert({ aluno_id: alunoId, plano_id: planoId, mes_referencia: mesReferencia, valor, data_vencimento: dataVencimento });
 
   if (error) return { error: error.message };
 
   redirect(`/financeiro/${alunoId}`);
 }
 
-function diaDezDoMes(mesReferencia: string): string {
+export async function lancarCobrancaAvulsa(_prevState: FormState, formData: FormData): Promise<FormState> {
+  const alunoId = String(formData.get("aluno_id") ?? "");
+  const descricao = String(formData.get("descricao") ?? "").trim();
+  const valor = Number(formData.get("valor") ?? 0);
+  const dataVencimento = String(formData.get("data_vencimento") ?? "") || null;
+
+  if (!alunoId || !descricao || valor <= 0) {
+    return { error: "Preencha aluno, descrição e valor." };
+  }
+
+  const hoje = new Date();
+  const mesReferencia = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, "0")}-01`;
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("mensalidades").insert({
+    aluno_id: alunoId,
+    mes_referencia: mesReferencia,
+    valor,
+    tipo: "avulsa",
+    descricao,
+    data_vencimento: dataVencimento,
+  });
+
+  if (error) return { error: error.message };
+
+  redirect(`/financeiro/${alunoId}`);
+}
+
+function diaDoVencimentoDoMes(mesReferencia: string, dia: number): string {
   const [ano, mes] = mesReferencia.split("-").map(Number);
-  return `${ano}-${String(mes).padStart(2, "0")}-10`;
+  return `${ano}-${String(mes).padStart(2, "0")}-${String(dia).padStart(2, "0")}`;
+}
+
+export async function atualizarDiaVencimento(alunoId: string, formData: FormData) {
+  const dia = Math.min(28, Math.max(1, Number(formData.get("dia_vencimento") ?? 10)));
+  const supabase = await createClient();
+  await supabase.from("profiles").update({ dia_vencimento: dia }).eq("id", alunoId);
+  revalidatePath(`/financeiro/${alunoId}`);
 }
 
 export async function marcarPago(mensalidadeId: string, alunoId: string, formData: FormData) {
@@ -77,6 +127,11 @@ export async function marcarStatus(mensalidadeId: string, alunoId: string, statu
 
   revalidatePath(`/financeiro/${alunoId}`);
   revalidatePath("/financeiro");
+}
+
+export async function avisarPagamento(mensalidadeId: string) {
+  const supabase = await createClient();
+  await supabase.rpc("avisar_pagamento", { p_mensalidade_id: mensalidadeId });
 }
 
 export async function atualizarDesconto(alunoId: string, formData: FormData) {

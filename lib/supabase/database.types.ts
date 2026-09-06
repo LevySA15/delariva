@@ -28,6 +28,8 @@ export interface Database {
           birth_date: string | null;
           faixa_categoria: FaixaCategoria | null;
           desconto_percentual: number;
+          dia_vencimento: number;
+          recebe_pagamento: boolean;
           created_at: string;
           updated_at: string;
         };
@@ -334,6 +336,8 @@ export interface Database {
           data_pagamento: string | null;
           forma_pagamento: string | null;
           data_vencimento: string | null;
+          tipo: string;
+          descricao: string | null;
           created_at: string;
         };
         Insert: Partial<Database["public"]["Tables"]["mensalidades"]["Row"]> & {
@@ -568,6 +572,43 @@ export interface Database {
           },
         ];
       };
+      academia_config: {
+        Row: {
+          id: boolean;
+          pix_key: string | null;
+          updated_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["academia_config"]["Row"]>;
+        Update: Partial<Database["public"]["Tables"]["academia_config"]["Row"]>;
+        Relationships: [];
+      };
+      pagamentos_professor: {
+        Row: {
+          id: string;
+          professor_id: string;
+          mes_referencia: string;
+          valor: number;
+          status: StatusMensalidade;
+          data_pagamento: string | null;
+          forma_pagamento: string | null;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["pagamentos_professor"]["Row"]> & {
+          professor_id: string;
+          mes_referencia: string;
+          valor: number;
+        };
+        Update: Partial<Database["public"]["Tables"]["pagamentos_professor"]["Row"]>;
+        Relationships: [
+          {
+            foreignKeyName: "pagamentos_professor_professor_id_fkey";
+            columns: ["professor_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -582,6 +623,10 @@ export interface Database {
       checkin_qr: {
         Args: { p_turma_id: string };
         Returns: { aula_id: string; ja_estava_presente: boolean }[];
+      };
+      avisar_pagamento: {
+        Args: { p_mensalidade_id: string };
+        Returns: undefined;
       };
     };
     Enums: {
