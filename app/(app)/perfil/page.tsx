@@ -5,12 +5,15 @@ import { createClient } from "@/lib/supabase/server";
 import { ROLE_LABELS, STATUS_MENSALIDADE_LABELS, FAIXA_COR_HEX, labelVeterania, mesesDesde } from "@/lib/domain";
 import { getFaixaAtual, getAlunoStats, getProfessorStats, getMensalidadeDoMes, getDependentes } from "@/lib/queries/dashboard";
 import { getTotalPresencas } from "@/lib/queries/frequencia";
+import { getRelacoesAluno, getColegasProfessor } from "@/lib/queries/membros";
+import { listAlunosDoProfessor } from "@/lib/queries/graduacao";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card } from "@/components/ui/card";
 import { StatCard } from "@/components/stat-card";
 import { FaixaBadge } from "@/components/ui/faixa-badge";
 import { PerfilForm } from "./perfil-form";
 import { AvatarUpload } from "./avatar-upload";
+import { RelacoesGrid } from "./relacoes";
 
 export default async function PerfilPage({
   searchParams,
@@ -54,6 +57,7 @@ export default async function PerfilPage({
       </Card>
 
       <PerfilStats profile={profile} />
+      <PessoasRelacionadas profile={profile} />
 
       <div>
         <AvatarUpload userId={profile.id} fullName={profile.full_name} avatarUrl={profile.avatar_url} />
@@ -116,6 +120,40 @@ async function PerfilStats({ profile }: { profile: Awaited<ReturnType<typeof req
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         <StatCard label="Dependentes" value={dependentes.length} icon={Users} />
       </div>
+    );
+  }
+
+  return null;
+}
+
+async function PessoasRelacionadas({ profile }: { profile: Awaited<ReturnType<typeof requireProfile>> }) {
+  const supabase = await createClient();
+
+  if (profile.role === "aluno" || profile.role === "aluno_menor") {
+    const { professores, colegas } = await getRelacoesAluno(supabase, profile.id);
+    return (
+      <>
+        <RelacoesGrid titulo="Meus professores" grupos={professores} />
+        <RelacoesGrid titulo="Colegas de turma" grupos={colegas} />
+      </>
+    );
+  }
+
+  if (profile.role === "professor") {
+    const [colegas, alunos] = await Promise.all([
+      getColegasProfessor(supabase, profile.id),
+      listAlunosDoProfessor(supabase, profile.id),
+    ]);
+    return (
+      <>
+        <RelacoesGrid titulo="Colegas professores" grupos={colegas} />
+        {alunos.length > 0 && (
+          <RelacoesGrid
+            titulo="Meus alunos"
+            grupos={[{ turmaId: "todos", turmaNome: "Todas as turmas", pessoas: alunos.map((a) => ({ id: a.id, full_name: a.full_name, avatar_url: null })) }]}
+          />
+        )}
+      </>
     );
   }
 
