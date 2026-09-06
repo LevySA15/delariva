@@ -21,9 +21,13 @@ export async function getTurma(supabase: DB, turmaId: string) {
 export async function getProfessoresDaTurma(supabase: DB, turmaId: string) {
   const { data } = await supabase
     .from("turma_professores")
-    .select("professor_id, professor:profiles!turma_professores_professor_id_fkey(id, full_name)")
+    .select("professor_id, professor:profiles!turma_professores_professor_id_fkey(id, full_name, role)")
     .eq("turma_id", turmaId);
-  return (data ?? []).map((d) => d.professor).filter(Boolean) as { id: string; full_name: string }[];
+  return (data ?? []).map((d) => d.professor).filter(Boolean) as {
+    id: string;
+    full_name: string;
+    role: string;
+  }[];
 }
 
 export async function getAlunosDaTurma(supabase: DB, turmaId: string) {

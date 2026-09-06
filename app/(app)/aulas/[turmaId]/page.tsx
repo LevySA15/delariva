@@ -73,6 +73,9 @@ export default async function TurmaDetailPage({
             <li key={p.id}>
               <Badge tone="ink" className="gap-2 py-1 pl-3 pr-1.5 text-[13px]">
                 {p.full_name}
+                {(p.role === "aluno" || p.role === "aluno_menor") && (
+                  <span className="text-[10px] font-normal uppercase tracking-wide text-white/50">aluno instrutor</span>
+                )}
                 {podeGerenciar && (
                   <form action={removerProfessor.bind(null, turmaId, p.id)}>
                     <button type="submit" className="rounded-full p-0.5 text-white/50 hover:bg-white/10 hover:text-white">
@@ -85,7 +88,12 @@ export default async function TurmaDetailPage({
           ))}
           {professores.length === 0 && <li className="text-sm text-ink-900/40">Nenhum professor atribuído.</li>}
         </ul>
-        {podeGerenciar && <AdicionarProfessorForm supabase={supabase} turmaId={turmaId} jaAtribuidos={professores.map((p) => p.id)} />}
+        {podeGerenciar && (
+          <div className="space-y-2">
+            <AdicionarProfessorForm supabase={supabase} turmaId={turmaId} jaAtribuidos={professores.map((p) => p.id)} />
+            <AdicionarInstrutorAlunoForm supabase={supabase} turmaId={turmaId} jaAtribuidos={professores.map((p) => p.id)} />
+          </div>
+        )}
       </section>
 
       <section>
@@ -241,6 +249,36 @@ async function AdicionarProfessorForm({
       </select>
       <Button type="submit" variant="secondary" size="sm">
         Adicionar
+      </Button>
+    </form>
+  );
+}
+
+async function AdicionarInstrutorAlunoForm({
+  supabase,
+  turmaId,
+  jaAtribuidos,
+}: {
+  supabase: Awaited<ReturnType<typeof createClient>>;
+  turmaId: string;
+  jaAtribuidos: string[];
+}) {
+  const alunos = await listAlunos(supabase);
+  const disponiveis = alunos.filter((a) => !jaAtribuidos.includes(a.id));
+
+  if (disponiveis.length === 0) return null;
+
+  return (
+    <form action={adicionarProfessor.bind(null, turmaId)} className="flex max-w-sm gap-2">
+      <select name="professor_id" className="flex-1 rounded-md border border-ink-900/15 bg-white px-3 py-1.5 text-sm">
+        {disponiveis.map((a) => (
+          <option key={a.id} value={a.id}>
+            {a.full_name}
+          </option>
+        ))}
+      </select>
+      <Button type="submit" variant="secondary" size="sm">
+        Adicionar aluno como instrutor
       </Button>
     </form>
   );
