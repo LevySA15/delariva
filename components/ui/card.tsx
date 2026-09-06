@@ -1,8 +1,18 @@
 import Link from "next/link";
 
-export function Card({ className = "", children }: { className?: string; children: React.ReactNode }) {
+export function Card({
+  className = "",
+  style,
+  children,
+}: {
+  className?: string;
+  style?: React.CSSProperties;
+  children: React.ReactNode;
+}) {
   return (
-    <div className={`rounded-lg border border-ink-900/10 bg-white shadow-sm ${className}`}>{children}</div>
+    <div className={`rounded-lg border border-ink-900/10 bg-white shadow-sm ${className}`} style={style}>
+      {children}
+    </div>
   );
 }
 

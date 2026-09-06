@@ -31,7 +31,7 @@ export default async function GraduacaoAlunoPage({
   const [graduacoes, avaliacoes, conquistas] = await Promise.all([
     getGraduacoes(supabase, alunoId),
     getAvaliacoes(supabase, alunoId),
-    getConquistasAluno(supabase, alunoId),
+    getConquistasAluno(supabase, alunoId, aluno.faixa_categoria ?? "adulto"),
   ]);
 
   const faixaAtual = graduacoes[0];

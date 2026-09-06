@@ -111,6 +111,22 @@ export function labelTempoTreino(meses: number): string {
   return `${anos} ${anos === 1 ? "ano" : "anos"} de treino`;
 }
 
+export const CONQUISTAS_VETERANIA_MESES = [6, 12, 24, 48] as const;
+
+export function labelVeterania(meses: number): string {
+  if (meses < 12) return `${meses} meses na faixa atual`;
+  const anos = meses / 12;
+  return `${anos} ${anos === 1 ? "ano" : "anos"} na faixa atual`;
+}
+
+export function capitalizar(texto: string): string {
+  return texto.charAt(0).toUpperCase() + texto.slice(1);
+}
+
+export function mesesDesde(dataISO: string): number {
+  return Math.floor((Date.now() - new Date(`${dataISO}T00:00:00`).getTime()) / (1000 * 60 * 60 * 24 * 30.44));
+}
+
 // =========================================================
 // Notificações
 // =========================================================
