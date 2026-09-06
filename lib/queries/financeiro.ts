@@ -32,6 +32,29 @@ export async function getPixKey(supabase: DB) {
   return data?.pix_key ?? null;
 }
 
+export async function getResumoFinanceiroPorAluno(supabase: DB, alunoIds: string[]) {
+  if (alunoIds.length === 0) return new Map<string, { pendente: number; atrasado: number; total: number }>();
+
+  const { data } = await supabase
+    .from("mensalidades")
+    .select("aluno_id, valor, status")
+    .in("aluno_id", alunoIds)
+    .neq("status", "pago");
+
+  const resumo = new Map<string, { pendente: number; atrasado: number; total: number }>();
+  for (const alunoId of alunoIds) resumo.set(alunoId, { pendente: 0, atrasado: 0, total: 0 });
+
+  for (const m of data ?? []) {
+    const r = resumo.get(m.aluno_id);
+    if (!r) continue;
+    if (m.status === "atrasado") r.atrasado += 1;
+    else r.pendente += 1;
+    r.total += Number(m.valor);
+  }
+
+  return resumo;
+}
+
 export async function listMensalidadesDoMes(supabase: DB) {
   const { data } = await supabase
     .from("mensalidades")
