@@ -16,6 +16,7 @@ export function AppShell({
   avatarUrl,
   email,
   userId,
+  recebePagamento = false,
   conversas,
   naoLidas,
   children,
@@ -25,6 +26,7 @@ export function AppShell({
   avatarUrl?: string | null;
   email: string | null;
   userId: string;
+  recebePagamento?: boolean;
   conversas: Awaited<ReturnType<typeof listConversasDiretas>>;
   naoLidas: Awaited<ReturnType<typeof getUnreadCounts>>;
   children: React.ReactNode;
@@ -35,7 +37,14 @@ export function AppShell({
     <div className="flex h-screen overflow-hidden bg-surface">
       {/* sidebar desktop */}
       <div className="hidden md:block">
-        <Sidebar role={role} fullName={fullName} avatarUrl={avatarUrl} email={email} unreadTotal={naoLidas.total} />
+        <Sidebar
+          role={role}
+          fullName={fullName}
+          avatarUrl={avatarUrl}
+          email={email}
+          recebePagamento={recebePagamento}
+          unreadTotal={naoLidas.total}
+        />
       </div>
 
       {/* sidebar mobile (drawer) */}
@@ -43,7 +52,14 @@ export function AppShell({
         <div className="fixed inset-0 z-40 md:hidden">
           <div className="absolute inset-0 bg-black/60" onClick={() => setMobileOpen(false)} />
           <div className="relative z-50 h-full">
-            <Sidebar role={role} fullName={fullName} avatarUrl={avatarUrl} email={email} unreadTotal={naoLidas.total} />
+            <Sidebar
+          role={role}
+          fullName={fullName}
+          avatarUrl={avatarUrl}
+          email={email}
+          recebePagamento={recebePagamento}
+          unreadTotal={naoLidas.total}
+        />
             <button
               aria-label="Fechar menu"
               onClick={() => setMobileOpen(false)}

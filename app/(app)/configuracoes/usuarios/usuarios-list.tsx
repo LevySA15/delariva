@@ -6,8 +6,9 @@ import { SearchInput } from "@/components/ui/search-input";
 import { inputClass } from "@/components/ui/field";
 import { ROLE_LABELS, type UserRole } from "@/lib/domain";
 import { RoleSelectForm } from "./role-select-form";
+import { RecebePagamentoCheckbox } from "./recebe-pagamento-checkbox";
 
-type Usuario = { id: string; full_name: string; email: string | null; role: UserRole };
+type Usuario = { id: string; full_name: string; email: string | null; role: UserRole; recebe_pagamento: boolean };
 
 const ROLE_FILTERS: (UserRole | "todos")[] = ["todos", "dono", "professor", "aluno", "aluno_menor", "responsavel"];
 
@@ -49,6 +50,7 @@ export function UsuariosList({ usuarios }: { usuarios: Usuario[] }) {
               <th className="px-4 py-3">Nome</th>
               <th className="px-4 py-3">E-mail</th>
               <th className="px-4 py-3">Perfil</th>
+              <th className="px-4 py-3">Recebe pagamento</th>
             </tr>
           </thead>
           <tbody>
@@ -59,11 +61,18 @@ export function UsuariosList({ usuarios }: { usuarios: Usuario[] }) {
                 <td className="px-4 py-3">
                   <RoleSelectForm userId={u.id} role={u.role} />
                 </td>
+                <td className="px-4 py-3">
+                  {u.role === "responsavel" ? (
+                    <span className="text-ink-900/30">—</span>
+                  ) : (
+                    <RecebePagamentoCheckbox userId={u.id} checked={u.recebe_pagamento} />
+                  )}
+                </td>
               </tr>
             ))}
             {filtrados.length === 0 && (
               <tr>
-                <td colSpan={3} className="px-4 py-6 text-center text-ink-900/40">
+                <td colSpan={4} className="px-4 py-6 text-center text-ink-900/40">
                   Nenhum usuário encontrado.
                 </td>
               </tr>

@@ -13,7 +13,11 @@ import { MensalidadesList } from "./mensalidades-list";
 export default async function FinanceiroPage() {
   const profile = await requireProfile();
 
-  if (profile.role === "professor" || profile.role === "aluno_menor") {
+  if (profile.role === "professor") {
+    redirect(profile.recebe_pagamento ? `/financeiro/professores/${profile.id}` : "/");
+  }
+
+  if (profile.role === "aluno_menor") {
     redirect("/");
   }
 
@@ -84,9 +88,12 @@ export default async function FinanceiroPage() {
         title="Financeiro"
         subtitle="Mês atual"
         action={
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <LinkButton href="/financeiro/relatorio" variant="secondary">
               Relatório
+            </LinkButton>
+            <LinkButton href="/financeiro/professores" variant="secondary">
+              Professores
             </LinkButton>
             <LinkButton href="/financeiro/inadimplencia" variant="secondary">
               Inadimplência

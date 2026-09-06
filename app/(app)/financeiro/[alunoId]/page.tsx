@@ -31,7 +31,7 @@ export default async function FinanceiroAlunoPage({
   const supabase = await createClient();
   const { data: aluno } = await supabase
     .from("profiles")
-    .select("id, full_name, desconto_percentual, dia_vencimento")
+    .select("id, full_name, desconto_percentual, dia_vencimento, recebe_pagamento")
     .eq("id", alunoId)
     .single();
   if (!aluno) notFound();
@@ -43,6 +43,15 @@ export default async function FinanceiroAlunoPage({
   return (
     <div className="space-y-6">
       <PageHeader title="Financeiro" subtitle={aluno.full_name} />
+
+      {aluno.recebe_pagamento && (podeGerenciar || profile.id === alunoId) && (
+        <Link
+          href={`/financeiro/professores/${alunoId}`}
+          className="flex w-fit items-center gap-1 text-sm font-medium text-brand-600 hover:underline"
+        >
+          Ver pagamentos como instrutor
+        </Link>
+      )}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Card className="p-4">

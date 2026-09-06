@@ -22,6 +22,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       avatarUrl={profile.avatar_url}
       email={profile.email}
       userId={profile.id}
+      recebePagamento={profile.recebe_pagamento}
       conversas={conversas}
       naoLidas={naoLidas}
     >

@@ -13,6 +13,15 @@ export async function atualizarRole(userId: string, formData: FormData) {
   revalidatePath("/configuracoes/usuarios");
 }
 
+export async function atualizarRecebePagamento(userId: string, formData: FormData) {
+  const recebePagamento = formData.get("recebe_pagamento") === "on";
+
+  const supabase = await createClient();
+  await supabase.from("profiles").update({ recebe_pagamento: recebePagamento }).eq("id", userId);
+  revalidatePath("/configuracoes/usuarios");
+  revalidatePath("/financeiro/professores");
+}
+
 export type FormState = { error: string | null };
 
 export async function vincularResponsavel(_prevState: FormState, formData: FormData): Promise<FormState> {

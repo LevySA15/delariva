@@ -46,16 +46,22 @@ export function Sidebar({
   fullName,
   avatarUrl,
   email,
+  recebePagamento = false,
   unreadTotal = 0,
 }: {
   role: UserRole;
   fullName: string;
   avatarUrl?: string | null;
   email?: string | null;
+  recebePagamento?: boolean;
   unreadTotal?: number;
 }) {
   const pathname = usePathname();
   const modules = ROLE_MODULES[role];
+  const modulesVisiveis =
+    role === "professor" && recebePagamento && !modules.includes("financeiro")
+      ? [...modules, "financeiro" as const]
+      : modules;
 
   return (
     <aside className="flex h-full w-64 shrink-0 flex-col bg-ink-950">
@@ -72,7 +78,7 @@ export function Sidebar({
       </div>
 
       <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
-        {modules.map((mod) => {
+        {modulesVisiveis.map((mod) => {
           const href = MODULE_HREFS[mod];
           const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
           const Icon = MODULE_ICONS[mod];
