@@ -72,7 +72,9 @@ export default async function TurmaDetailPage({
           {professores.map((p) => (
             <li key={p.id}>
               <Badge tone="ink" className="gap-2 py-1 pl-3 pr-1.5 text-[13px]">
-                {p.full_name}
+                <Link href={`/membros/${p.id}`} className="hover:underline">
+                  {p.full_name}
+                </Link>
                 {(p.role === "aluno" || p.role === "aluno_menor") && (
                   <span className="text-[10px] font-normal uppercase tracking-wide text-white/50">aluno instrutor</span>
                 )}
@@ -108,7 +110,9 @@ export default async function TurmaDetailPage({
                 key={a.id}
                 className="flex items-center justify-between rounded-md border border-ink-900/10 bg-white px-3 py-2 text-sm text-ink-950"
               >
-                {a.full_name}
+                <Link href={`/membros/${a.id}`} className="hover:text-brand-700 hover:underline">
+                  {a.full_name}
+                </Link>
                 {podeGerenciar && (
                   <form action={desmatricularAluno.bind(null, turmaId, a.id)}>
                     <button type="submit" className="text-xs font-medium text-ink-900/40 hover:text-brand-700">

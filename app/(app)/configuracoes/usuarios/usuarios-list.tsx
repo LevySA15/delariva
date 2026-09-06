@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { SearchInput } from "@/components/ui/search-input";
 import { inputClass } from "@/components/ui/field";
@@ -56,7 +57,11 @@ export function UsuariosList({ usuarios }: { usuarios: Usuario[] }) {
           <tbody>
             {filtrados.map((u) => (
               <tr key={u.id} className="border-b border-ink-900/5 last:border-0 hover:bg-ink-950/[0.015]">
-                <td className="px-4 py-3 font-medium text-ink-950">{u.full_name}</td>
+                <td className="px-4 py-3 font-medium text-ink-950">
+                  <Link href={`/membros/${u.id}`} className="hover:text-brand-700 hover:underline">
+                    {u.full_name}
+                  </Link>
+                </td>
                 <td className="px-4 py-3 text-ink-900/50">{u.email ?? "—"}</td>
                 <td className="px-4 py-3">
                   <RoleSelectForm userId={u.id} role={u.role} />
