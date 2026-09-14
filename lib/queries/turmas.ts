@@ -18,6 +18,23 @@ export async function getTurma(supabase: DB, turmaId: string) {
   return data;
 }
 
+export async function listTurmasDoProfessor(supabase: DB, professorId: string) {
+  const { data } = await supabase
+    .from("turma_professores")
+    .select("turma:turmas(*)")
+    .eq("professor_id", professorId);
+  return (data ?? []).map((d) => d.turma).filter((t) => t !== null);
+}
+
+export async function listTurmasDoAluno(supabase: DB, alunoId: string) {
+  const { data } = await supabase
+    .from("matriculas")
+    .select("turma:turmas(*)")
+    .eq("aluno_id", alunoId)
+    .eq("ativo", true);
+  return (data ?? []).map((d) => d.turma).filter((t) => t !== null);
+}
+
 export async function getProfessoresDaTurma(supabase: DB, turmaId: string) {
   const { data } = await supabase
     .from("turma_professores")

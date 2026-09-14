@@ -7,6 +7,7 @@ import { Sidebar } from "./sidebar";
 import { ChatBubble } from "./chat-bubble";
 import { PushRegistration } from "./push-registration";
 import { DevBanner } from "./dev-banner";
+import { PopupProvider } from "./popup/popup-provider";
 import type { UserRole } from "@/lib/domain";
 import type { listConversasDiretas, getUnreadCounts } from "@/lib/queries/chat";
 
@@ -34,6 +35,7 @@ export function AppShell({
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
+    <PopupProvider>
     <div className="flex h-screen overflow-hidden bg-surface">
       {/* sidebar desktop */}
       <div className="hidden md:block">
@@ -94,5 +96,6 @@ export function AppShell({
       <ChatBubble currentUserId={userId} conversas={conversas} unreadPorConversa={naoLidas.porConversaId} />
       <PushRegistration />
     </div>
+    </PopupProvider>
   );
 }

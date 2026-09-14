@@ -8,6 +8,17 @@ import { PageHeader } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/empty-state";
 import { FaixaBadge } from "@/components/ui/faixa-badge";
 import { BarChart } from "@/components/ui/bar-chart";
+import { PopupStatCard } from "@/components/popup/popup-card-button";
+import { PopupTrigger } from "@/components/popup/popup-trigger";
+import { ReceitaChartPopup } from "@/components/popup/receita-chart-popup";
+import {
+  AlunosPopupContent,
+  ProfessoresPopupContent,
+  TurmasPopupContent,
+  MensalidadesPendentesPopupContent,
+  MinhasTurmasPopupContent,
+  MeusAlunosPopupContent,
+} from "@/components/popup/popup-contents";
 import {
   getAlunoStats,
   getDependentes,
@@ -63,18 +74,53 @@ async function DonoStats() {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        <StatCard label="Alunos" value={stats.alunos} icon={Users} />
-        <StatCard label="Professores" value={stats.professores} icon={GraduationCap} />
-        <StatCard label="Turmas ativas" value={stats.turmasAtivas} icon={Swords} />
-        <StatCard label="Mensalidades pendentes" value={stats.mensalidadesPendentes} hint="mês atual" icon={Wallet} />
+        <PopupStatCard
+          label="Alunos"
+          value={stats.alunos}
+          icon={Users}
+          title="Alunos"
+          href="/graduacao"
+          content={<AlunosPopupContent />}
+        />
+        <PopupStatCard
+          label="Professores"
+          value={stats.professores}
+          icon={GraduationCap}
+          title="Professores"
+          href="/configuracoes/usuarios"
+          content={<ProfessoresPopupContent />}
+        />
+        <PopupStatCard
+          label="Turmas ativas"
+          value={stats.turmasAtivas}
+          icon={Swords}
+          title="Turmas ativas"
+          href="/aulas"
+          content={<TurmasPopupContent />}
+        />
+        <PopupStatCard
+          label="Mensalidades pendentes"
+          value={stats.mensalidadesPendentes}
+          hint="mês atual"
+          icon={Wallet}
+          title="Mensalidades pendentes"
+          href="/financeiro"
+          content={<MensalidadesPendentesPopupContent />}
+        />
       </div>
 
-      <Card className="p-4">
-        <p className="mb-4 font-display text-sm font-semibold uppercase tracking-wide text-ink-900/60">
-          Receita paga · últimos 6 meses
-        </p>
-        <BarChart data={receita} format="moeda" />
-      </Card>
+      <PopupTrigger
+        title="Receita paga · últimos 6 meses"
+        href="/financeiro/relatorio"
+        content={<ReceitaChartPopup data={receita} />}
+      >
+        <Card className="p-4">
+          <p className="mb-4 font-display text-sm font-semibold uppercase tracking-wide text-ink-900/60">
+            Receita paga · últimos 6 meses
+          </p>
+          <BarChart data={receita} format="moeda" />
+        </Card>
+      </PopupTrigger>
     </div>
   );
 }
@@ -85,8 +131,22 @@ async function ProfessorStats({ professorId }: { professorId: string }) {
 
   return (
     <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-      <StatCard label="Minhas turmas" value={stats.minhasTurmas} icon={Swords} />
-      <StatCard label="Meus alunos" value={stats.meusAlunos} icon={Users} />
+      <PopupStatCard
+        label="Minhas turmas"
+        value={stats.minhasTurmas}
+        icon={Swords}
+        title="Minhas turmas"
+        href="/aulas"
+        content={<MinhasTurmasPopupContent tipo="professor" id={professorId} />}
+      />
+      <PopupStatCard
+        label="Meus alunos"
+        value={stats.meusAlunos}
+        icon={Users}
+        title="Meus alunos"
+        href="/graduacao"
+        content={<MeusAlunosPopupContent professorId={professorId} />}
+      />
     </div>
   );
 }
@@ -98,7 +158,14 @@ async function AlunoStats({ alunoId, isAluno }: { alunoId: string; isAluno: bool
 
   return (
     <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-      <StatCard label="Minhas turmas" value={stats.minhasTurmas} icon={Swords} />
+      <PopupStatCard
+        label="Minhas turmas"
+        value={stats.minhasTurmas}
+        icon={Swords}
+        title="Minhas turmas"
+        href="/aulas"
+        content={<MinhasTurmasPopupContent tipo="aluno" id={alunoId} />}
+      />
       <StatCard
         label="Faixa atual"
         value={stats.faixa ? `${stats.faixa.faixa} · grau ${stats.faixa.grau}` : "—"}
