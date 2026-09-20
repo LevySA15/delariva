@@ -3,9 +3,14 @@
 import { createClient } from "@/lib/supabase/server";
 import { listTodosAlunos, listAlunosDoProfessor, listAlunosComFaixa } from "@/lib/queries/graduacao";
 import { listProfessores, listTurmas, listTurmasDoProfessor, listTurmasDoAluno, getTurma, getProfessoresDaTurma, getAlunosDaTurma } from "@/lib/queries/turmas";
-import { listMensalidadesDoMes } from "@/lib/queries/financeiro";
+import {
+  listMensalidadesDoMes,
+  listMensalidadesPagasDoMes,
+  listProjecaoPorAluno,
+} from "@/lib/queries/financeiro";
 import { getMensalidadeDoMes } from "@/lib/queries/dashboard";
 import { getMembro } from "@/lib/queries/membros";
+import { getPagamentoDoMes } from "@/lib/queries/pagamentos";
 
 export async function popupListaAlunos() {
   const supabase = await createClient();
@@ -66,4 +71,23 @@ export async function popupMensalidadeMini(alunoId: string) {
     getMensalidadeDoMes(supabase, alunoId),
   ]);
   return { aluno, mensalidade };
+}
+
+export async function popupListaMensalidadesPagas() {
+  const supabase = await createClient();
+  return listMensalidadesPagasDoMes(supabase);
+}
+
+export async function popupProjecaoPorAluno() {
+  const supabase = await createClient();
+  return listProjecaoPorAluno(supabase);
+}
+
+export async function popupPagamentoProfessorMini(professorId: string) {
+  const supabase = await createClient();
+  const [{ data: professor }, pagamento] = await Promise.all([
+    supabase.from("profiles").select("id, full_name").eq("id", professorId).single(),
+    getPagamentoDoMes(supabase, professorId),
+  ]);
+  return { professor, pagamento };
 }

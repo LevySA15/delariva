@@ -2,12 +2,13 @@
 
 import { useMemo, useState } from "react";
 import { CalendarDays, Clock, List, Swords } from "lucide-react";
-import { CardLink } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { SearchInput } from "@/components/ui/search-input";
 import { inputClass } from "@/components/ui/field";
 import { DIAS_SEMANA_LABELS, type FaixaCategoria } from "@/lib/domain";
+import { useOpenTurma } from "@/components/popup/popup-contents";
 import { TurmasCalendar } from "./turmas-calendar";
 
 type Turma = {
@@ -23,6 +24,7 @@ export function TurmasList({ turmas }: { turmas: Turma[] }) {
   const [busca, setBusca] = useState("");
   const [categoria, setCategoria] = useState<FaixaCategoria | "todas">("todas");
   const [visao, setVisao] = useState<"lista" | "calendario">("lista");
+  const abrirTurma = useOpenTurma();
 
   const filtradas = useMemo(() => {
     const termo = busca.trim().toLowerCase();
@@ -81,19 +83,26 @@ export function TurmasList({ turmas }: { turmas: Turma[] }) {
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {filtradas.map((turma) => (
-            <CardLink key={turma.id} href={`/aulas/${turma.id}`} className="p-4">
-              <p className="font-semibold text-ink-950">{turma.nome}</p>
-              <p className="mt-2 text-sm text-ink-900/60">
-                {turma.dias_semana.map((d) => DIAS_SEMANA_LABELS[d]).join(", ")}
-              </p>
-              <p className="flex items-center gap-1.5 text-sm text-ink-900/60">
-                <Clock className="h-3.5 w-3.5" />
-                {turma.horario_inicio.slice(0, 5)} às {turma.horario_fim.slice(0, 5)}
-              </p>
-              <Badge tone={turma.faixa_etaria === "adulto" ? "ink" : "brand"} className="mt-3">
-                {turma.faixa_etaria === "adulto" ? "Adulto" : "Infantil"}
-              </Badge>
-            </CardLink>
+            <button
+              key={turma.id}
+              type="button"
+              onClick={() => abrirTurma(turma.id, turma.nome)}
+              className="block w-full text-left transition hover:-translate-y-0.5"
+            >
+              <Card className="p-4">
+                <p className="font-semibold text-ink-950">{turma.nome}</p>
+                <p className="mt-2 text-sm text-ink-900/60">
+                  {turma.dias_semana.map((d) => DIAS_SEMANA_LABELS[d]).join(", ")}
+                </p>
+                <p className="flex items-center gap-1.5 text-sm text-ink-900/60">
+                  <Clock className="h-3.5 w-3.5" />
+                  {turma.horario_inicio.slice(0, 5)} às {turma.horario_fim.slice(0, 5)}
+                </p>
+                <Badge tone={turma.faixa_etaria === "adulto" ? "ink" : "brand"} className="mt-3">
+                  {turma.faixa_etaria === "adulto" ? "Adulto" : "Infantil"}
+                </Badge>
+              </Card>
+            </button>
           ))}
         </div>
       )}

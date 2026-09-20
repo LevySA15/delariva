@@ -79,6 +79,16 @@ export async function listMensalidadesDoMes(supabase: DB) {
   return data ?? [];
 }
 
+export async function listMensalidadesPagasDoMes(supabase: DB) {
+  const { data } = await supabase
+    .from("mensalidades")
+    .select("*, aluno:profiles!mensalidades_aluno_id_fkey(full_name), plano:planos(nome)")
+    .eq("mes_referencia", currentMonthStart())
+    .eq("status", "pago")
+    .order("data_pagamento", { ascending: false });
+  return data ?? [];
+}
+
 export async function listAlunosAtivos(supabase: DB) {
   const { data } = await supabase
     .from("profiles")
@@ -182,4 +192,20 @@ export async function getProjecaoRecorrente(supabase: DB) {
   }
 
   return [...ultimoPorAluno.values()].reduce((soma, v) => soma + v, 0);
+}
+
+export async function listProjecaoPorAluno(supabase: DB) {
+  const { data } = await supabase
+    .from("mensalidades")
+    .select("aluno_id, valor, mes_referencia, aluno:profiles!mensalidades_aluno_id_fkey(full_name)")
+    .eq("tipo", "mensalidade")
+    .order("mes_referencia", { ascending: false });
+
+  const porAluno = new Map<string, { aluno_id: string; full_name: string; valor: number }>();
+  for (const m of data ?? []) {
+    if (porAluno.has(m.aluno_id)) continue;
+    porAluno.set(m.aluno_id, { aluno_id: m.aluno_id, full_name: m.aluno?.full_name ?? "—", valor: Number(m.valor) });
+  }
+
+  return [...porAluno.values()].sort((a, b) => b.valor - a.valor);
 }

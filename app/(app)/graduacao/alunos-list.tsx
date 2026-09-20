@@ -2,15 +2,17 @@
 
 import { useMemo, useState } from "react";
 import { Award } from "lucide-react";
-import { CardLink } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { SearchInput } from "@/components/ui/search-input";
 import { FaixaBadge } from "@/components/ui/faixa-badge";
+import { useOpenMembro } from "@/components/popup/popup-contents";
 
 type Aluno = { id: string; full_name: string; faixa: { faixa: string; grau: number } | null };
 
 export function AlunosList({ alunos }: { alunos: Aluno[] }) {
   const [busca, setBusca] = useState("");
+  const abrirMembro = useOpenMembro();
 
   const filtrados = useMemo(() => {
     const termo = busca.trim().toLowerCase();
@@ -32,16 +34,23 @@ export function AlunosList({ alunos }: { alunos: Aluno[] }) {
       ) : (
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
           {filtrados.map((a) => (
-            <CardLink key={a.id} href={`/graduacao/${a.id}`} className="p-4">
-              <p className="font-semibold text-ink-950">{a.full_name}</p>
-              <div className="mt-2">
-                {a.faixa ? (
-                  <FaixaBadge faixa={a.faixa.faixa} grau={a.faixa.grau} />
-                ) : (
-                  <span className="text-sm text-ink-900/40">sem graduação</span>
-                )}
-              </div>
-            </CardLink>
+            <button
+              key={a.id}
+              type="button"
+              onClick={() => abrirMembro(a.id, a.full_name, `/graduacao/${a.id}`)}
+              className="block w-full text-left transition hover:-translate-y-0.5"
+            >
+              <Card className="p-4">
+                <p className="font-semibold text-ink-950">{a.full_name}</p>
+                <div className="mt-2">
+                  {a.faixa ? (
+                    <FaixaBadge faixa={a.faixa.faixa} grau={a.faixa.grau} />
+                  ) : (
+                    <span className="text-sm text-ink-900/40">sem graduação</span>
+                  )}
+                </div>
+              </Card>
+            </button>
           ))}
         </div>
       )}

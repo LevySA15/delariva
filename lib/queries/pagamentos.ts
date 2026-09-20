@@ -30,3 +30,13 @@ export async function listPagamentosDoMes(supabase: DB) {
     .order("status");
   return data ?? [];
 }
+
+export async function getPagamentoDoMes(supabase: DB, professorId: string) {
+  const { data } = await supabase
+    .from("pagamentos_professor")
+    .select("*")
+    .eq("professor_id", professorId)
+    .eq("mes_referencia", currentMonthStart())
+    .maybeSingle();
+  return data ?? null;
+}

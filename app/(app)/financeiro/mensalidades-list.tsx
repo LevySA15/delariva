@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
 import { Wallet, Download } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -11,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { inputClass } from "@/components/ui/field";
 import { STATUS_MENSALIDADE_LABELS } from "@/lib/domain";
 import { baixarCsv } from "@/lib/csv";
+import { useOpenFinanceiroAluno } from "@/components/popup/popup-contents";
 import type { listMensalidadesDoMes } from "@/lib/queries/financeiro";
 import type { StatusMensalidade } from "@/lib/supabase/database.types";
 
@@ -19,6 +19,7 @@ type Mensalidade = Awaited<ReturnType<typeof listMensalidadesDoMes>>[number];
 export function MensalidadesList({ mensalidades }: { mensalidades: Mensalidade[] }) {
   const [busca, setBusca] = useState("");
   const [status, setStatus] = useState<StatusMensalidade | "todos">("todos");
+  const abrirFinanceiro = useOpenFinanceiroAluno();
 
   const filtradas = useMemo(() => {
     const termo = busca.trim().toLowerCase();
@@ -88,9 +89,13 @@ export function MensalidadesList({ mensalidades }: { mensalidades: Mensalidade[]
               {filtradas.map((m) => (
                 <tr key={m.id} className="border-b border-ink-900/5 last:border-0 hover:bg-ink-950/[0.015]">
                   <td className="px-4 py-3">
-                    <Link href={`/financeiro/${m.aluno_id}`} className="font-medium text-ink-950 hover:text-brand-700 hover:underline">
+                    <button
+                      type="button"
+                      onClick={() => abrirFinanceiro(m.aluno_id, m.aluno?.full_name ?? "Aluno")}
+                      className="font-medium text-ink-950 hover:text-brand-700 hover:underline"
+                    >
                       {m.aluno?.full_name ?? "—"}
-                    </Link>
+                    </button>
                   </td>
                   <td className="px-4 py-3 text-ink-900/50">{m.plano?.nome ?? "—"}</td>
                   <td className="px-4 py-3 font-medium text-ink-950">R$ {Number(m.valor).toFixed(2)}</td>

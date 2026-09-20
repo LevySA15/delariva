@@ -17,7 +17,13 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardLink } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { LinkButton } from "@/components/ui/button";
-import { StatusMensalidadeBadge } from "@/components/ui/status-badge";
+import { PopupTrigger } from "@/components/popup/popup-trigger";
+import { InadimplenciaRows, PagamentosProfessorRows } from "./financeiro-rows";
+import {
+  MensalidadesPagasPopupContent,
+  MensalidadesPendentesPopupContent,
+  ProjecaoPopupContent,
+} from "@/components/popup/popup-contents";
 import { MensalidadesList } from "./mensalidades-list";
 
 export default async function FinanceiroPage() {
@@ -100,7 +106,6 @@ export default async function FinanceiroPage() {
   ]);
 
   const mesAtual = meses[0];
-  const pagamentoPorProfessor = new Map(pagamentosDoMes.map((p) => [p.professor_id, p]));
 
   return (
     <div className="space-y-6">
@@ -118,18 +123,24 @@ export default async function FinanceiroPage() {
       />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <Card className="p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-ink-900/50">Recebido este mês</p>
-          <p className="mt-1 font-display text-2xl font-bold text-emerald-700">R$ {mesAtual.recebido.toFixed(2)}</p>
-        </Card>
-        <Card className="p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-ink-900/50">Pendente este mês</p>
-          <p className="mt-1 font-display text-2xl font-bold text-brand-700">R$ {mesAtual.pendente.toFixed(2)}</p>
-        </Card>
-        <Card className="p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-ink-900/50">Projeção recorrente/mês</p>
-          <p className="mt-1 font-display text-2xl font-bold text-ink-950">R$ {projecao.toFixed(2)}</p>
-        </Card>
+        <PopupTrigger title="Recebido este mês" content={<MensalidadesPagasPopupContent />}>
+          <Card className="p-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-ink-900/50">Recebido este mês</p>
+            <p className="mt-1 font-display text-2xl font-bold text-emerald-700">R$ {mesAtual.recebido.toFixed(2)}</p>
+          </Card>
+        </PopupTrigger>
+        <PopupTrigger title="Pendente este mês" content={<MensalidadesPendentesPopupContent />}>
+          <Card className="p-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-ink-900/50">Pendente este mês</p>
+            <p className="mt-1 font-display text-2xl font-bold text-brand-700">R$ {mesAtual.pendente.toFixed(2)}</p>
+          </Card>
+        </PopupTrigger>
+        <PopupTrigger title="Projeção recorrente/mês" content={<ProjecaoPopupContent />}>
+          <Card className="p-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-ink-900/50">Projeção recorrente/mês</p>
+            <p className="mt-1 font-display text-2xl font-bold text-ink-950">R$ {projecao.toFixed(2)}</p>
+          </Card>
+        </PopupTrigger>
       </div>
       <Link
         href="/financeiro/relatorio"
@@ -155,16 +166,7 @@ export default async function FinanceiroPage() {
           {inadimplentes.length === 0 ? (
             <p className="text-sm text-ink-900/40">Nenhuma pendência. 🎉</p>
           ) : (
-            <ul className="space-y-2">
-              {inadimplentes.slice(0, 5).map((i) => (
-                <li key={i.id} className="flex items-center justify-between text-sm">
-                  <Link href={`/financeiro/${i.aluno_id}`} className="font-medium text-ink-950 hover:text-brand-700 hover:underline">
-                    {i.aluno?.full_name ?? "—"}
-                  </Link>
-                  <StatusMensalidadeBadge status={i.status} />
-                </li>
-              ))}
-            </ul>
+            <InadimplenciaRows inadimplentes={inadimplentes} />
           )}
         </Card>
 
@@ -183,23 +185,7 @@ export default async function FinanceiroPage() {
               Ninguém marcado como &ldquo;recebe pagamento&rdquo; ainda (em Configurações → Usuários).
             </p>
           ) : (
-            <ul className="space-y-2">
-              {recebedores.slice(0, 5).map((r) => {
-                const pagamento = pagamentoPorProfessor.get(r.id);
-                return (
-                  <li key={r.id} className="flex items-center justify-between text-sm">
-                    <Link href={`/financeiro/professores/${r.id}`} className="font-medium text-ink-950 hover:text-brand-700 hover:underline">
-                      {r.full_name}
-                    </Link>
-                    {pagamento ? (
-                      <StatusMensalidadeBadge status={pagamento.status} />
-                    ) : (
-                      <span className="text-xs text-ink-900/40">sem lançamento</span>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
+            <PagamentosProfessorRows recebedores={recebedores} pagamentosDoMes={pagamentosDoMes} />
           )}
         </Card>
       </div>

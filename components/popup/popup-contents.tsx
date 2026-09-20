@@ -13,16 +13,20 @@ import {
   popupListaProfessores,
   popupListaTurmas,
   popupListaMensalidadesPendentes,
+  popupListaMensalidadesPagas,
+  popupProjecaoPorAluno,
   popupMinhasTurmasProfessor,
   popupMeusAlunosProfessor,
   popupMinhasTurmasAluno,
   popupMembro,
   popupTurmaMini,
   popupMensalidadeMini,
+  popupPagamentoProfessorMini,
 } from "@/app/(app)/popup-actions";
 
 type Pessoa = { id: string; full_name: string; faixa: { faixa: string; grau: number } | null };
 type Turma = { id: string; nome: string; dias_semana: number[]; horario_inicio: string; horario_fim: string; faixa_etaria: string };
+type MensalidadeComAluno = { id: string; aluno_id: string; valor: number | string; status: "pendente" | "atrasado" | "pago"; aluno: { full_name: string } | null };
 
 function PessoaRow({ pessoa, onClick }: { pessoa: Pessoa; onClick: () => void }) {
   return (
@@ -63,16 +67,47 @@ function TurmaRow({ turma, onClick }: { turma: Turma; onClick: () => void }) {
   );
 }
 
-function useOpenMembro() {
+export function useOpenMembro() {
   const { push } = usePopup();
-  return (id: string, nome: string) =>
-    push({ title: nome, href: `/membros/${id}`, content: <MembroMiniContent id={id} /> });
+  return (id: string, nome: string, href?: string) =>
+    push({ title: nome, href: href ?? `/membros/${id}`, content: <MembroMiniContent id={id} /> });
 }
 
-function useOpenTurma() {
+export function useOpenTurma() {
   const { push } = usePopup();
   return (id: string, nome: string) =>
     push({ title: nome, href: `/aulas/${id}`, content: <TurmaMiniContent turmaId={id} /> });
+}
+
+export function useOpenFinanceiroAluno() {
+  const { push } = usePopup();
+  return (id: string, nome: string) =>
+    push({ title: nome, href: `/financeiro/${id}`, content: <MensalidadeMiniContent alunoId={id} /> });
+}
+
+export function useOpenPagamentoProfessor() {
+  const { push } = usePopup();
+  return (id: string, nome: string) =>
+    push({ title: nome, href: `/financeiro/professores/${id}`, content: <PagamentoProfessorMiniContent professorId={id} /> });
+}
+
+function MensalidadeRow({ mensalidade, onClick }: { mensalidade: MensalidadeComAluno; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex w-full items-center justify-between gap-2 rounded-md px-2 py-2.5 text-left text-sm transition hover:bg-ink-950/[0.03]"
+    >
+      <div>
+        <p className="font-medium text-ink-950">{mensalidade.aluno?.full_name ?? "—"}</p>
+        <p className="text-xs text-ink-900/50">R$ {Number(mensalidade.valor).toFixed(2)}</p>
+      </div>
+      <span className="flex items-center gap-2">
+        <StatusMensalidadeBadge status={mensalidade.status} />
+        <ChevronRight className="h-4 w-4 text-ink-900/30" />
+      </span>
+    </button>
+  );
 }
 
 export function AlunosPopupContent() {
@@ -177,7 +212,7 @@ export function MeusAlunosPopupContent({ professorId }: { professorId: string })
 }
 
 export function MensalidadesPendentesPopupContent() {
-  const { push } = usePopup();
+  const abrirFinanceiro = useOpenFinanceiroAluno();
   return (
     <PopupLoader
       load={popupListaMensalidadesPendentes}
@@ -187,24 +222,55 @@ export function MensalidadesPendentesPopupContent() {
         ) : (
           <div className="divide-y divide-ink-900/5">
             {mensalidades.map((m) => (
+              <MensalidadeRow key={m.id} mensalidade={m} onClick={() => abrirFinanceiro(m.aluno_id, m.aluno?.full_name ?? "Aluno")} />
+            ))}
+          </div>
+        )
+      }
+    />
+  );
+}
+
+export function MensalidadesPagasPopupContent() {
+  const abrirFinanceiro = useOpenFinanceiroAluno();
+  return (
+    <PopupLoader
+      load={popupListaMensalidadesPagas}
+      render={(mensalidades) =>
+        mensalidades.length === 0 ? (
+          <EmptyState message="Nenhum pagamento registrado este mês ainda." />
+        ) : (
+          <div className="divide-y divide-ink-900/5">
+            {mensalidades.map((m) => (
+              <MensalidadeRow key={m.id} mensalidade={m} onClick={() => abrirFinanceiro(m.aluno_id, m.aluno?.full_name ?? "Aluno")} />
+            ))}
+          </div>
+        )
+      }
+    />
+  );
+}
+
+export function ProjecaoPopupContent() {
+  const abrirFinanceiro = useOpenFinanceiroAluno();
+  return (
+    <PopupLoader
+      load={popupProjecaoPorAluno}
+      render={(projecao) =>
+        projecao.length === 0 ? (
+          <EmptyState message="Nenhuma mensalidade recorrente lançada ainda." />
+        ) : (
+          <div className="divide-y divide-ink-900/5">
+            {projecao.map((p) => (
               <button
-                key={m.id}
+                key={p.aluno_id}
                 type="button"
-                onClick={() =>
-                  push({
-                    title: m.aluno?.full_name ?? "Aluno",
-                    href: `/financeiro/${m.aluno_id}`,
-                    content: <MensalidadeMiniContent alunoId={m.aluno_id} />,
-                  })
-                }
+                onClick={() => abrirFinanceiro(p.aluno_id, p.full_name)}
                 className="flex w-full items-center justify-between gap-2 rounded-md px-2 py-2.5 text-left text-sm transition hover:bg-ink-950/[0.03]"
               >
-                <div>
-                  <p className="font-medium text-ink-950">{m.aluno?.full_name ?? "—"}</p>
-                  <p className="text-xs text-ink-900/50">R$ {Number(m.valor).toFixed(2)}</p>
-                </div>
+                <span className="font-medium text-ink-950">{p.full_name}</span>
                 <span className="flex items-center gap-2">
-                  <StatusMensalidadeBadge status={m.status} />
+                  <span className="text-sm text-ink-900/60">R$ {p.valor.toFixed(2)}</span>
                   <ChevronRight className="h-4 w-4 text-ink-900/30" />
                 </span>
               </button>
@@ -316,6 +382,31 @@ function MensalidadeMiniContent({ alunoId }: { alunoId: string }) {
               </div>
             ) : (
               <p className="text-sm text-ink-900/40">Nenhuma mensalidade lançada este mês.</p>
+            )}
+          </div>
+        )
+      }
+    />
+  );
+}
+
+function PagamentoProfessorMiniContent({ professorId }: { professorId: string }) {
+  return (
+    <PopupLoader
+      load={() => popupPagamentoProfessorMini(professorId)}
+      render={({ professor, pagamento }) =>
+        !professor ? (
+          <EmptyState message="Professor não encontrado." />
+        ) : (
+          <div className="space-y-3">
+            <p className="font-semibold text-ink-950">{professor.full_name}</p>
+            {pagamento ? (
+              <div className="flex items-center justify-between rounded-md border border-ink-900/10 p-3">
+                <p className="text-sm text-ink-900/70">R$ {Number(pagamento.valor).toFixed(2)} · mês atual</p>
+                <StatusMensalidadeBadge status={pagamento.status} />
+              </div>
+            ) : (
+              <p className="text-sm text-ink-900/40">Nenhum pagamento lançado este mês.</p>
             )}
           </div>
         )
