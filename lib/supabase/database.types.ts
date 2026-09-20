@@ -30,6 +30,11 @@ export interface Database {
           desconto_percentual: number;
           dia_vencimento: number;
           recebe_pagamento: boolean;
+          bio: string | null;
+          cover_url: string | null;
+          instagram: string | null;
+          cidade: string | null;
+          data_entrada: string | null;
           created_at: string;
           updated_at: string;
         };

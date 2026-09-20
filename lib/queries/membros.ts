@@ -129,14 +129,25 @@ export type MembroCard = {
   full_name: string;
   role: string;
   avatar_url: string | null;
+  cover_url: string | null;
+  bio: string | null;
+  instagram: string | null;
+  cidade: string | null;
+  membroDesde: string;
   faixa: { faixa: string; grau: number } | null;
   turmasMatriculado: string[];
   turmasLeciona: string[];
 };
 
 export async function getMembro(supabase: DB, id: string): Promise<MembroCard | null> {
-  const { data: perfil } = await supabase.from("profiles").select("id, full_name, role, avatar_url").eq("id", id).single();
+  const { data: perfil } = await supabase
+    .from("profiles")
+    .select("id, full_name, role, avatar_url, cover_url, bio, instagram, cidade, data_entrada, created_at")
+    .eq("id", id)
+    .single();
   if (!perfil) return null;
+
+  const { data_entrada, created_at, ...resto } = perfil;
 
   const [faixa, matriculasRes, turmaProfessoresRes] = await Promise.all([
     getFaixaAtual(supabase, id),
@@ -145,7 +156,8 @@ export async function getMembro(supabase: DB, id: string): Promise<MembroCard | 
   ]);
 
   return {
-    ...perfil,
+    ...resto,
+    membroDesde: data_entrada ?? created_at,
     faixa,
     turmasMatriculado: (matriculasRes.data ?? []).map((m) => m.turma?.nome).filter((n): n is string => !!n),
     turmasLeciona: (turmaProfessoresRes.data ?? []).map((t) => t.turma?.nome).filter((n): n is string => !!n),

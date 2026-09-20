@@ -10,10 +10,12 @@ export function AvatarUpload({
   userId,
   fullName,
   avatarUrl,
+  compact = false,
 }: {
   userId: string;
   fullName: string;
   avatarUrl: string | null;
+  compact?: boolean;
 }) {
   const [preview, setPreview] = useState<string | null>(avatarUrl);
   const [uploading, setUploading] = useState(false);
@@ -70,7 +72,7 @@ export function AvatarUpload({
   return (
     <div className="flex items-center gap-4">
       <div className="relative">
-        <Avatar fullName={fullName} avatarUrl={preview} size="lg" />
+        <Avatar fullName={fullName} avatarUrl={preview} size="lg" className={compact ? "ring-4 ring-white" : undefined} />
         <button
           type="button"
           onClick={() => inputRef.current?.click()}
@@ -82,11 +84,13 @@ export function AvatarUpload({
         </button>
         <input ref={inputRef} type="file" accept="image/*" onChange={handleFile} className="hidden" />
       </div>
-      <div>
-        <p className="text-sm font-medium text-ink-950">Foto de perfil</p>
-        <p className="text-xs text-ink-900/50">JPG ou PNG, até 3MB.</p>
-        {error && <p className="mt-1 text-xs text-brand-700">{error}</p>}
-      </div>
+      {!compact && (
+        <div>
+          <p className="text-sm font-medium text-ink-950">Foto de perfil</p>
+          <p className="text-xs text-ink-900/50">JPG ou PNG, até 3MB.</p>
+        </div>
+      )}
+      {error && <p className="mt-1 text-xs text-brand-700">{error}</p>}
     </div>
   );
 }

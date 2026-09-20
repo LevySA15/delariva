@@ -14,12 +14,20 @@ export function PerfilForm({
   email,
   role,
   birthDate,
+  bio,
+  instagram,
+  cidade,
+  dataEntrada,
 }: {
   fullName: string;
   phone: string | null;
   email: string | null;
   role: UserRole;
   birthDate: string | null;
+  bio: string | null;
+  instagram: string | null;
+  cidade: string | null;
+  dataEntrada: string | null;
 }) {
   const [state, formAction, pending] = useActionState(updateOwnProfile, initialState);
 
@@ -30,6 +38,36 @@ export function PerfilForm({
     >
       <Field label="Nome completo" htmlFor="full_name">
         <input id="full_name" name="full_name" defaultValue={fullName} required className={inputClass} />
+      </Field>
+
+      <Field label="Bio" htmlFor="bio">
+        <textarea
+          id="bio"
+          name="bio"
+          rows={3}
+          maxLength={280}
+          placeholder="Conte um pouco sobre você..."
+          defaultValue={bio ?? ""}
+          className={inputClass}
+        />
+      </Field>
+
+      <Field label="Cidade" htmlFor="cidade">
+        <input id="cidade" name="cidade" defaultValue={cidade ?? ""} placeholder="Sua cidade" className={inputClass} />
+      </Field>
+
+      <Field label="Instagram" htmlFor="instagram">
+        <input id="instagram" name="instagram" defaultValue={instagram ?? ""} placeholder="seu.usuario" className={inputClass} />
+      </Field>
+
+      <Field label="Na academia desde" htmlFor="data_entrada">
+        <input
+          id="data_entrada"
+          name="data_entrada"
+          type="date"
+          defaultValue={dataEntrada ?? ""}
+          className={inputClass}
+        />
       </Field>
 
       <Field label="Telefone" htmlFor="phone">
