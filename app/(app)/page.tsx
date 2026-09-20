@@ -77,7 +77,7 @@ async function DonoStats() {
         <PopupStatCard
           label="Alunos"
           value={stats.alunos}
-          icon={Users}
+          icon={<Users className="h-4 w-4 text-brand-600" strokeWidth={2} />}
           title="Alunos"
           href="/graduacao"
           content={<AlunosPopupContent />}
@@ -85,7 +85,7 @@ async function DonoStats() {
         <PopupStatCard
           label="Professores"
           value={stats.professores}
-          icon={GraduationCap}
+          icon={<GraduationCap className="h-4 w-4 text-brand-600" strokeWidth={2} />}
           title="Professores"
           href="/configuracoes/usuarios"
           content={<ProfessoresPopupContent />}
@@ -93,7 +93,7 @@ async function DonoStats() {
         <PopupStatCard
           label="Turmas ativas"
           value={stats.turmasAtivas}
-          icon={Swords}
+          icon={<Swords className="h-4 w-4 text-brand-600" strokeWidth={2} />}
           title="Turmas ativas"
           href="/aulas"
           content={<TurmasPopupContent />}
@@ -102,7 +102,7 @@ async function DonoStats() {
           label="Mensalidades pendentes"
           value={stats.mensalidadesPendentes}
           hint="mês atual"
-          icon={Wallet}
+          icon={<Wallet className="h-4 w-4 text-brand-600" strokeWidth={2} />}
           title="Mensalidades pendentes"
           href="/financeiro"
           content={<MensalidadesPendentesPopupContent />}
@@ -134,7 +134,7 @@ async function ProfessorStats({ professorId }: { professorId: string }) {
       <PopupStatCard
         label="Minhas turmas"
         value={stats.minhasTurmas}
-        icon={Swords}
+        icon={<Swords className="h-4 w-4 text-brand-600" strokeWidth={2} />}
         title="Minhas turmas"
         href="/aulas"
         content={<MinhasTurmasPopupContent tipo="professor" id={professorId} />}
@@ -142,7 +142,7 @@ async function ProfessorStats({ professorId }: { professorId: string }) {
       <PopupStatCard
         label="Meus alunos"
         value={stats.meusAlunos}
-        icon={Users}
+        icon={<Users className="h-4 w-4 text-brand-600" strokeWidth={2} />}
         title="Meus alunos"
         href="/graduacao"
         content={<MeusAlunosPopupContent professorId={professorId} />}
@@ -161,7 +161,7 @@ async function AlunoStats({ alunoId, isAluno }: { alunoId: string; isAluno: bool
       <PopupStatCard
         label="Minhas turmas"
         value={stats.minhasTurmas}
-        icon={Swords}
+        icon={<Swords className="h-4 w-4 text-brand-600" strokeWidth={2} />}
         title="Minhas turmas"
         href="/aulas"
         content={<MinhasTurmasPopupContent tipo="aluno" id={alunoId} />}
